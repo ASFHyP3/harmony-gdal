@@ -1,4 +1,4 @@
-name: nisar-py
+name: harmony-gdal-adapter
 channels:
   - conda-forge
   - nodefaults
@@ -10,9 +10,8 @@ dependencies:
   - pytest
   - pytest-cov
   # For running
-  - isce3
+  - gdal
   - libgdal-hdf5
-  - numpy
   - pystac
   - pip:
       - -r requirements.txt

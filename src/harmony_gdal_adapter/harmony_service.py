@@ -1,4 +1,4 @@
-"""Harmony service for nisar-py."""
+"""Harmony service for ."""
 
 import argparse
 import tempfile
@@ -7,7 +7,6 @@ from pathlib import Path
 import harmony_service_lib
 import pystac
 from harmony_service_lib.exceptions import HarmonyException
-
 from nisar_py.gcov_rgb import RGBDecompException, make_rgb_geotiff
 
 
@@ -42,7 +41,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             )
 
             try:
-                rgb_path = make_rgb_geotiff(
+                output_path = make_rgb_geotiff(
                     gcov_product=Path(granule_filename),
                     output_path=Path(temp_dir),
                 )
@@ -50,8 +49,8 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 raise HarmonyException(str(e))
 
             url = harmony_service_lib.util.stage(
-                local_filename=str(rgb_path),
-                remote_filename=rgb_path.name,
+                local_filename=str(output_path),
+                remote_filename=output_path.name,
                 mime='image/tiff',
                 location=self.message.stagingLocation,
                 logger=self.logger,
@@ -59,7 +58,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
 
             result = item.clone()
             result.assets = {
-                'rgb_browse': pystac.Asset(url, title=rgb_path.name, media_type='image/tiff', roles=['visual'])
+                'rgb_browse': pystac.Asset(url, title=output_path.name, media_type='image/tiff', roles=['visual'])
             }
 
         return result

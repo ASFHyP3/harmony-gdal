@@ -3,13 +3,12 @@ requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nisar_py"
+name = "harmony_gdal_adapter"
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
 authors = [
     {name="ASF Tools Team", email="UAF-asf-apd@alaska.edu"},
 ]
-description = "NISAR data transformations."
+description = "Harmony GDAL Adapter"
 license = {text = "BSD-3-Clause"}
 classifiers=[
     "Intended Audience :: Science/Research",
@@ -36,7 +35,7 @@ develop = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ASFHyP3/nisar-py"
+Homepage = "https://github.com/nasa/harmony-gdal-adapter"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
