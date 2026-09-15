@@ -21,8 +21,12 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-# FIXME: isce3 is not pip-installable, so dependencies may not serve a purpose here
-# dependencies = []
+dependencies = [
+    "gdal",
+    "pystac",
+    "kcl-lib",
+    "harmony-service-lib",
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
