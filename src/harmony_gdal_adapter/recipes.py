@@ -13,6 +13,7 @@ class RecipeInputOptions:
     spatial_extents: str | None
     output_type: str
     output_filename: str
+    variable_path: str
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:
