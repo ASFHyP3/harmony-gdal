@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
-
-from recipe_types import Recipe
+from typing import Literal, Optional, Tuple
 
 
 @dataclass
@@ -27,3 +25,64 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
         Recipe: The built recipe from the input options
     """
     raise NotImplementedError()
+
+
+type Recipe = GdalTranslateRecipe | GdalWarpRecipe
+
+
+class GdalInputOptions:
+    driver: Literal['HDF5'] | Literal['NETCDF']
+    virtual_filesystem: Optional[Literal['/vsicurl/'] | Literal['/vsis3/']]
+    dataset_path: str
+    filename: str
+
+
+class GdalOutput:
+    name: str
+    extension: str
+
+
+class GdalOutputOptions:
+    outputType: GdalOutput
+    outputDirectory: str = ''
+    outputName: str = 'output'
+
+
+class GdalOptions:
+    inputOptions: GdalInputOptions
+    outputOptions: GdalOutputOptions
+    configOptions: dict
+
+
+class GdalWarpBoundsSpatialSubset:
+    outputBounds: Tuple[float, float, float, float]
+    outputBoundsSRS: str | None
+
+
+class GdalWarpCutlineSpatialSubset:
+    cutline_wkt: str
+    cutline_srs: Optional[str]
+    cutline_layer: Optional[str]
+    cutline_where: Optional[str]
+    cutline_sql: Optional[str]
+    cutline_blend: Optional[int]
+    crop_to_cutline: bool = True
+
+
+class GdalWarpOptions:
+    spatial_subset: Optional[GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset]
+    reproject_to_srs: Optional[str]
+    source_srs: Optional[str]
+    srcAlpha: Optional[bool]
+    dstAlpha: Optional[bool]
+    multithreaded: bool = True
+    copyMetadata: bool = True
+
+
+class GdalWarpRecipe:
+    warp_options: GdalWarpOptions
+    gdal_options: GdalOptions
+
+
+class GdalTranslateRecipe:
+    gdal_options: GdalOptions
