@@ -6,24 +6,15 @@ from recipe_types import Recipe
 
 
 @dataclass
-class GeoTiffOutput:
-    """This is just a placeholder, at some point we will come up with a proper way for
-    the user to determine what filetype they want to export to."""
-
-    dataset: str
-    extension: Literal['.tif'] = '.tif'
-    filetype: Literal['GTiff'] = 'GTiff'
-
-
-@dataclass
 class RecipeInputOptions:
     """Input options used by recipes."""
 
     collection_shortname: str
-    filename: Path
+    input_filename: Path
     target_srs: str | None
     spatial_extents: str | None
-    output_type: GeoTiffOutput
+    output_type: str
+    output_filename: str
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:
