@@ -20,19 +20,24 @@ _gdal_options = schema.GdalOptions {
     }
 }
 
-results: schema.Recipe = schema.GdalWarpRecipe {
-    warp_options = schema.GdalWarpOptions {
-        dstAlpha = True
-        if spatialExtents:
-            spatial_subset = schema.GdalWarpCutlineSpatialSubset {
-                cutline_wkt = spatialExtents
-                cutline_srs = "WGS84"
-                crop_to_cutline = True
+recipe: schema.Recipe = schema.Recipe {
+    if targetSRS or spatialExtents:
+        inner = schema.GdalWarpRecipe {
+            warp_options = schema.GdalWarpOptions {
+                dstAlpha = True
+                if spatialExtents:
+                    spatial_subset = schema.GdalWarpCutlineSpatialSubset {
+                        cutline_wkt = spatialExtents
+                        cutline_srs = "WGS84"
+                        crop_to_cutline = True
+                    }
+                if targetSRS:
+                    target_srs = targetSRS
             }
-        if targetSRS:
-            reproject_to_srs: targetSRS
-    }
-    gdal_options = _gdal_options
-} if targetSRS or spatialExtents else schema.GdalTranslateRecipe {
-    gdal_options: _gdal_options
+            gdal_options = _gdal_options
+        }
+    else:
+        inner = schema.GdalTranslateRecipe {
+            gdal_options: _gdal_options
+        }
 }

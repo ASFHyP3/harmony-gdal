@@ -1,4 +1,5 @@
-type Recipe = GdalWarpRecipe | GdalTranslateRecipe
+schema Recipe:
+    inner: GdalWarpRecipe | GdalTranslateRecipe
 
 schema GdalWarpRecipe:
     warp_options: GdalWarpOptions
@@ -42,7 +43,7 @@ GdalCogOutput = GdalOutput {
 
 schema GdalWarpOptions:
     spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
-    reproject_to_srs?: str
+    target_srs?: str
     source_srs?: str
     srcAlpha?: bool
     dstAlpha?: bool

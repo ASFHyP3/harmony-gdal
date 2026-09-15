@@ -1,6 +1,11 @@
-from dataclasses import dataclass
+import json
+from dataclasses import asdict, dataclass
+from importlib.resources import files
 from pathlib import Path
-from typing import Literal, Optional, Tuple
+from typing import Literal
+
+from dacite import from_dict
+from kcl_lib import api as kcl
 
 
 @dataclass
@@ -9,11 +14,83 @@ class RecipeInputOptions:
 
     collection_shortname: str
     input_filename: Path
-    target_srs: str | None
-    spatial_extents: str | None
     output_type: str
     output_filename: str
     variable_path: str
+    target_srs: str | None = None
+    spatial_extents: str | None = None
+
+
+@dataclass
+class GdalInputOptions:
+    driver: Literal['HDF5'] | Literal['NETCDF']
+    virtual_filesystem: Literal['/vsicurl/'] | Literal['/vsis3/'] | None
+    dataset_path: str
+    filename: str
+
+
+@dataclass
+class GdalOutput:
+    name: str
+    extension: str
+
+
+@dataclass
+class GdalOutputOptions:
+    outputType: GdalOutput
+    outputDirectory: str = ''
+    outputName: str = 'output'
+
+
+@dataclass
+class GdalOptions:
+    inputOptions: GdalInputOptions
+    outputOptions: GdalOutputOptions
+    configOptions: dict
+
+
+@dataclass
+class GdalWarpBoundsSpatialSubset:
+    outputBounds: tuple[float, float, float, float]
+    outputBoundsSRS: str | None
+
+
+@dataclass
+class GdalWarpCutlineSpatialSubset:
+    cutline_wkt: str
+    cutline_srs: str | None
+    cutline_layer: str | None
+    cutline_where: str | None
+    cutline_sql: str | None
+    cutline_blend: int | None
+    crop_to_cutline: bool = True
+
+
+@dataclass
+class GdalWarpOptions:
+    spatial_subset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None
+    target_srs: str | None
+    source_srs: str | None
+    srcAlpha: bool | None
+    dstAlpha: bool | None
+    multithreaded: bool = True
+    copyMetadata: bool = True
+
+
+@dataclass
+class GdalWarpRecipe:
+    warp_options: GdalWarpOptions
+    gdal_options: GdalOptions
+
+
+@dataclass
+class GdalTranslateRecipe:
+    gdal_options: GdalOptions
+
+
+@dataclass
+class Recipe:
+    inner: GdalTranslateRecipe | GdalWarpRecipe
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:
@@ -25,65 +102,11 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     Returns:
         Recipe: The built recipe from the input options
     """
-    raise NotImplementedError()
+    args = kcl.ExecProgramArgs(
+        k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
+        args=[kcl.Argument(name=name, value=value) for name, value in asdict(options)],
+    )
+    api = kcl.API()
+    result = api.exec_program(args)
 
-
-type Recipe = GdalTranslateRecipe | GdalWarpRecipe
-
-
-class GdalInputOptions:
-    driver: Literal['HDF5'] | Literal['NETCDF']
-    virtual_filesystem: Optional[Literal['/vsicurl/'] | Literal['/vsis3/']]
-    dataset_path: str
-    filename: str
-
-
-class GdalOutput:
-    name: str
-    extension: str
-
-
-class GdalOutputOptions:
-    outputType: GdalOutput
-    outputDirectory: str = ''
-    outputName: str = 'output'
-
-
-class GdalOptions:
-    inputOptions: GdalInputOptions
-    outputOptions: GdalOutputOptions
-    configOptions: dict
-
-
-class GdalWarpBoundsSpatialSubset:
-    outputBounds: Tuple[float, float, float, float]
-    outputBoundsSRS: str | None
-
-
-class GdalWarpCutlineSpatialSubset:
-    cutline_wkt: str
-    cutline_srs: Optional[str]
-    cutline_layer: Optional[str]
-    cutline_where: Optional[str]
-    cutline_sql: Optional[str]
-    cutline_blend: Optional[int]
-    crop_to_cutline: bool = True
-
-
-class GdalWarpOptions:
-    spatial_subset: Optional[GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset]
-    reproject_to_srs: Optional[str]
-    source_srs: Optional[str]
-    srcAlpha: Optional[bool]
-    dstAlpha: Optional[bool]
-    multithreaded: bool = True
-    copyMetadata: bool = True
-
-
-class GdalWarpRecipe:
-    warp_options: GdalWarpOptions
-    gdal_options: GdalOptions
-
-
-class GdalTranslateRecipe:
-    gdal_options: GdalOptions
+    return from_dict(data_class=Recipe, data=json.loads(result.json_result))
