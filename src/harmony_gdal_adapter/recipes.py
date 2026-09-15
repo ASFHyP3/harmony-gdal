@@ -7,12 +7,12 @@ from typing import Literal, Optional, Tuple
 class RecipeInputOptions:
     """Input options used by recipes."""
 
-    collection_shortname: str
-    input_filename: Path
-    target_srs: str | None
-    spatial_extents: str | None
-    output_type: str
-    output_filename: str
+    collection_shortname: str | None = None
+    input_filename: Path | None = None
+    target_srs: str | None = None
+    spatial_extents: str | None = None
+    output_type: str | None = None
+    output_filename: str | None = None
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:

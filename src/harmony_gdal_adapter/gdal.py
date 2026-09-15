@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from osgeo.gdal import WarpOptions
-from recipe_types import Recipe
+# from recipe_types import Recipe
 
 
 def execute_recipe(recipe: Recipe):
