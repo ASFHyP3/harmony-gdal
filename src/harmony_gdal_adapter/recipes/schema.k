@@ -16,6 +16,7 @@ schema GdalInputOptions:
     driver: "HDF5" | "NETCDF"
     virtual_filesystem?: "/vsicurl/" | "/vsis3/"
     dataset_path: str
+    filename: str
 
 schema GdalOutputOptions:
     outputType: GdalOutput
@@ -58,6 +59,6 @@ schema GdalWarpCutlineSpatialSubset:
     cutline_layer?: str
     cutline_where?: str
     cutline_sql?: str
-    cutline_blend: int
-    crop_to_cutline?: bool
+    cutline_blend?: int
+    crop_to_cutline: bool = True
 
