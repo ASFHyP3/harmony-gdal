@@ -23,8 +23,8 @@ class RecipeInputOptions:
 
 @dataclass
 class GdalInputOptions:
-    driver: Literal['HDF5'] | Literal['NETCDF']
-    virtual_filesystem: Literal['/vsicurl/'] | Literal['/vsis3/'] | None
+    driver: Literal['HDF5', 'NETCDF']
+    virtual_filesystem: Literal['/vsicurl/', '/vsis3/'] | None
     dataset_path: str
     filename: str
 
