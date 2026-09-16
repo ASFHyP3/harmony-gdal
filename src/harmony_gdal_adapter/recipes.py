@@ -12,6 +12,14 @@ from kcl_lib import api as kcl
 class RecipeInputOptions:
     """Input options used by recipes."""
 
+<<<<<<< HEAD
+    collection_shortname: str | None = None
+    input_filename: Path | None = None
+    target_srs: str | None = None
+    spatial_extents: str | None = None
+    output_type: str | None = None
+    output_filename: str | None = None
+=======
     collection_shortname: str
     input_filename: Path
     output_type: str
@@ -91,6 +99,7 @@ class GdalTranslateRecipe:
 @dataclass
 class Recipe:
     inner: GdalTranslateRecipe | GdalWarpRecipe
+>>>>>>> develop
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:

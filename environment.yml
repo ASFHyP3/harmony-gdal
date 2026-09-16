@@ -13,5 +13,6 @@ dependencies:
   - gdal
   - libgdal-hdf5
   - pystac
+  - argparse_dataclass
   - pip:
       - -e .[develop]

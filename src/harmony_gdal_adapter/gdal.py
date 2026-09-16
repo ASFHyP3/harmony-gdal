@@ -1,4 +1,9 @@
 
+<<<<<<< HEAD
+from osgeo.gdal import WarpOptions
+# from recipe_types import Recipe
+=======
+>>>>>>> develop
 
 
 def execute_recipe(recipe: Recipe):
