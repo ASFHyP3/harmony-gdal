@@ -40,6 +40,9 @@ develop = [
     "pytest-cov",
 ]
 
+[project.scripts]
+hga = "harmony_gdal_adapter.__main__:run_cli"
+
 [project.urls]
 Homepage = "https://github.com/nasa/harmony-gdal-adapter"
 
