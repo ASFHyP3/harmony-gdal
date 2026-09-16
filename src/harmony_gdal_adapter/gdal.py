@@ -1,3 +1,4 @@
+
 def execute_recipe(recipe: Recipe):
     raise NotImplementedError()
 
