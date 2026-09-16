@@ -1,7 +1,9 @@
-from dataclasses import dataclass
 
+<<<<<<< HEAD
 from osgeo.gdal import WarpOptions
 # from recipe_types import Recipe
+=======
+>>>>>>> develop
 
 
 def execute_recipe(recipe: Recipe):
@@ -18,7 +20,7 @@ def execute_gdal_warp_recipe(recipe: GdalWarpRecipe):
     raise NotImplementedError()
 
 
-def build_gdal_translate_options(recipe: GdalTransalateRecipe):
+def build_gdal_translate_options(recipe: GdalTranslateRecipe):
     raise NotImplementedError()
 
 

@@ -1,4 +1,5 @@
-type Recipe = GdalWarpRecipe | GdalTranslateRecipe
+schema Recipe:
+    inner: GdalWarpRecipe | GdalTranslateRecipe
 
 schema GdalWarpRecipe:
     warp_options: GdalWarpOptions
@@ -16,6 +17,7 @@ schema GdalInputOptions:
     driver: "HDF5" | "NETCDF"
     virtual_filesystem?: "/vsicurl/" | "/vsis3/"
     dataset_path: str
+    filename: str
 
 schema GdalOutputOptions:
     outputType: GdalOutput
@@ -41,7 +43,7 @@ GdalCogOutput = GdalOutput {
 
 schema GdalWarpOptions:
     spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
-    reproject_to_srs?: str
+    target_srs?: str
     source_srs?: str
     srcAlpha?: bool
     dstAlpha?: bool
@@ -58,6 +60,6 @@ schema GdalWarpCutlineSpatialSubset:
     cutline_layer?: str
     cutline_where?: str
     cutline_sql?: str
-    cutline_blend: int
-    crop_to_cutline?: bool
+    cutline_blend?: int
+    crop_to_cutline: bool = True
 

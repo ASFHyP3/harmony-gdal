@@ -25,6 +25,7 @@ dependencies = [
     "gdal",
     "pystac",
     "kcl-lib",
+    "dacite",
     "harmony-service-lib",
 ]
 dynamic = ["version"]
