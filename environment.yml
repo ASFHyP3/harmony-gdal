@@ -15,4 +15,4 @@ dependencies:
   - pystac
   - argparse_dataclass
   - pip:
-      - -e .
+      - -e .[develop]
