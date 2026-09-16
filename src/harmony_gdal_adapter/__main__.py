@@ -1,6 +1,7 @@
 from argparse_dataclass import ArgumentParser
-from gdal import execute_recipe
-from recipes import RecipeInputOptions, build_recipe
+
+from harmony_gdal_adapter.gdal import execute_recipe
+from harmony_gdal_adapter.recipes import RecipeInputOptions, build_recipe
 
 
 def run_cli() -> None:

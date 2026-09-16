@@ -1,7 +1,9 @@
 from pathlib import Path
 
 from osgeo.gdal import Translate, TranslateOptions, Warp, WarpOptions
-from recipes import (
+
+from harmony_gdal_adapter.recipes import (
+    GdalOutputOptions,
     GdalTranslateRecipe,
     GdalWarpBoundsSpatialSubset,
     GdalWarpCutlineSpatialSubset,
@@ -44,12 +46,12 @@ def build_output_string(recipe: Recipe) -> str:
 
 
 def build_gdal_translate_options(recipe: GdalTranslateRecipe) -> TranslateOptions:
-    translate_options = build_gdal_output_options(recipe)
+    translate_options = build_gdal_output_options(recipe.gdal_options.outputOptions)
     return translate_options
 
 
 def build_gdal_warp_options(recipe: GdalWarpRecipe) -> WarpOptions:
-    warp_options = build_gdal_output_options(recipe)
+    warp_options = build_gdal_output_options(recipe.gdal_options.outputOptions)
     if recipe.warp_options.target_srs is not None:
         warp_options['dstSRS'] = recipe.warp_options.target_srs
     if recipe.warp_options.source_srs is not None:
@@ -81,8 +83,7 @@ def build_gdal_warp_options(recipe: GdalWarpRecipe) -> WarpOptions:
     return warp_options
 
 
-def build_gdal_output_options(recipe: Recipe) -> dict:
-    output_options = recipe.inner.gdal_options.outputOptions
+def build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
     gdal_output_options = {}
     gdal_output_options['format'] = output_options.outputType
     return gdal_output_options

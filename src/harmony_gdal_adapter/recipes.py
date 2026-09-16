@@ -104,7 +104,7 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     """
     args = kcl.ExecProgramArgs(
         k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
-        args=[kcl.Argument(name=name, value=value) for name, value in asdict(options)],
+        args=[kcl.Argument(name=name, value=value) for name, value in asdict(options).items()],
     )
     api = kcl.API()
     result = api.exec_program(args)
