@@ -45,12 +45,12 @@ def build_output_string(recipe: Recipe) -> str:
     return str(output_path)
 
 
-def build_gdal_translate_options(recipe: GdalTranslateRecipe) -> TranslateOptions:
+def build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
     translate_options = build_gdal_output_options(recipe.gdal_options.outputOptions)
     return translate_options
 
 
-def build_gdal_warp_options(recipe: GdalWarpRecipe) -> WarpOptions:
+def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
     warp_options = build_gdal_output_options(recipe.gdal_options.outputOptions)
     if recipe.warp_options.target_srs is not None:
         warp_options['dstSRS'] = recipe.warp_options.target_srs

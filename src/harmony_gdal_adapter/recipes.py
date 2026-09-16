@@ -2,6 +2,7 @@ import json
 from dataclasses import asdict, dataclass
 from importlib.resources import files
 from pathlib import Path
+from pprint import pprint
 from typing import Literal
 
 from dacite import from_dict
@@ -13,7 +14,7 @@ class RecipeInputOptions:
     """Input options used by recipes."""
 
     collection_shortname: str
-    input_filename: Path
+    input_filename: str
     output_type: str
     output_filename: str
     variable_path: str
@@ -24,9 +25,9 @@ class RecipeInputOptions:
 @dataclass
 class GdalInputOptions:
     driver: Literal['HDF5', 'NETCDF']
-    virtual_filesystem: Literal['/vsicurl/', '/vsis3/'] | None
     dataset_path: str
     filename: str
+    virtual_filesystem: Literal['/vsicurl/', '/vsis3/'] | None = None
 
 
 @dataclass
@@ -46,33 +47,33 @@ class GdalOutputOptions:
 class GdalOptions:
     inputOptions: GdalInputOptions
     outputOptions: GdalOutputOptions
-    configOptions: dict
+    configOptions: dict | None = None
 
 
 @dataclass
 class GdalWarpBoundsSpatialSubset:
     outputBounds: tuple[float, float, float, float]
-    outputBoundsSRS: str | None
+    outputBoundsSRS: str | None = None
 
 
 @dataclass
 class GdalWarpCutlineSpatialSubset:
     cutline_wkt: str
-    cutline_srs: str | None
-    cutline_layer: str | None
-    cutline_where: str | None
-    cutline_sql: str | None
-    cutline_blend: int | None
+    cutline_srs: str | None = None
+    cutline_layer: str | None = None
+    cutline_where: str | None = None
+    cutline_sql: str | None = None
+    cutline_blend: int | None = None
     crop_to_cutline: bool = True
 
 
 @dataclass
 class GdalWarpOptions:
-    spatial_subset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None
-    target_srs: str | None
-    source_srs: str | None
-    srcAlpha: bool | None
-    dstAlpha: bool | None
+    spatial_subset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None = None
+    target_srs: str | None = None
+    source_srs: str | None = None
+    srcAlpha: bool | None = None
+    dstAlpha: bool | None = None
     multithreaded: bool = True
     copyMetadata: bool = True
 

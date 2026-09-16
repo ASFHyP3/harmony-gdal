@@ -11,7 +11,7 @@ schema GdalTranslateRecipe:
 schema GdalOptions:
     inputOptions: GdalInputOptions
     outputOptions: GdalOutputOptions
-    configOptions: dict
+    configOptions?: dict
 
 schema GdalInputOptions:
     driver: "HDF5" | "NETCDF"
