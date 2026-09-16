@@ -14,4 +14,4 @@ dependencies:
   - libgdal-hdf5
   - pystac
   - pip:
-      - -e .
+      - -e .[develop]
