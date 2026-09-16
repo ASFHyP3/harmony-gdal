@@ -23,9 +23,7 @@ def execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe):
 
 def build_input_string(recipe: Recipe):
     input_options = recipe.inner.gdal_options.inputOptions
-    input_path = Path(input_options.dataset_path)
-    input_path = input_path / input_options.filename
-    return str(input_path)
+    return f"{input_options.driver}:{input_options.virtual_filesystem}{input_options.filename}:{input_options.dataset_path}"
 
 def build_output_string(recipe: Recipe):
     output_options = recipe.inner.gdal_options.outputOptions
