@@ -1,8 +1,6 @@
 import json
 from dataclasses import asdict, dataclass
 from importlib.resources import files
-from pathlib import Path
-from pprint import pprint
 from typing import Literal
 
 from dacite import from_dict
@@ -91,7 +89,7 @@ class GdalTranslateRecipe:
 
 @dataclass
 class Recipe:
-    inner: GdalTranslateRecipe | GdalWarpRecipe
+    inner: GdalWarpRecipe | GdalTranslateRecipe
 
 
 def build_recipe(options: RecipeInputOptions) -> Recipe:
@@ -103,11 +101,13 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     Returns:
         Recipe: The built recipe from the input options
     """
+    recipe_args = [kcl.Argument(name=name, value=value) for name, value in asdict(options).items()]
     args = kcl.ExecProgramArgs(
         k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
-        args=[kcl.Argument(name=name, value=value) for name, value in asdict(options).items()],
+        args=recipe_args,
     )
     api = kcl.API()
     result = api.exec_program(args)
-
-    return from_dict(data_class=Recipe, data=json.loads(result.json_result))
+    recipe_dict = json.loads(result.json_result)['recipe']
+    recipe = from_dict(data_class=Recipe, data=recipe_dict)
+    return recipe

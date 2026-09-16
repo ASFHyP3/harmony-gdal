@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from osgeo.gdal import Translate, TranslateOptions, Warp, WarpOptions
+from osgeo.gdal import Translate, Warp
 
 from harmony_gdal_adapter.recipes import (
     GdalOutputOptions,
@@ -15,10 +15,10 @@ from harmony_gdal_adapter.recipes import (
 def execute_recipe(recipe: Recipe) -> None:
     srcDS = build_input_string(recipe)
     destName = build_output_string(recipe)
-    if isinstance(recipe, GdalTranslateRecipe):
-        execute_gdal_translate_recipe(srcDS, destName, recipe)
-    elif isinstance(recipe, GdalWarpRecipe):
-        execute_gdal_warp_recipe(srcDS, destName, recipe)
+    if isinstance(recipe.inner, GdalTranslateRecipe):
+        execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
+    elif isinstance(recipe.inner, GdalWarpRecipe):
+        execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
     else:
         raise TypeError('recipe must be GdalTranslateRecipe or GdalWarpRecipe')
 
@@ -35,13 +35,13 @@ def execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) 
 
 def build_input_string(recipe: Recipe) -> str:
     input_options = recipe.inner.gdal_options.inputOptions
-    return f'{input_options.driver}:{input_options.virtual_filesystem}{input_options.filename}:{input_options.dataset_path}'
+    return f'{input_options.driver}:{input_options.virtual_filesystem or ""}{input_options.filename}:{input_options.dataset_path}'
 
 
 def build_output_string(recipe: Recipe) -> str:
     output_options = recipe.inner.gdal_options.outputOptions
     output_path = Path(output_options.outputDirectory)
-    output_path = output_path / output_options.outputDirectory
+    output_path = output_path / output_options.outputName
     return str(output_path)
 
 
@@ -85,5 +85,5 @@ def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
 
 def build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
     gdal_output_options = {}
-    gdal_output_options['format'] = output_options.outputType
+    gdal_output_options['format'] = output_options.outputType.name
     return gdal_output_options
