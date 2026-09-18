@@ -24,41 +24,33 @@ class RecipeInputOptions:
 class GdalInputOptions:
     driver: Literal['HDF5', 'NETCDF']
     dataset_path: str
-    filename: str
+    input_file_path: str
     virtual_filesystem: Literal['/vsicurl/', '/vsis3/'] | None = None
 
 
 @dataclass
-class GdalOutput:
-    name: str
-    extension: str
-
-
-@dataclass
 class GdalOutputOptions:
-    outputType: GdalOutput
-    outputDirectory: str = ''
-    outputName: str = 'output'
+    output_type: Literal['GTiff', 'COG']
+    output_file_path: str = 'output'
 
 
 @dataclass
 class GdalOptions:
-    inputOptions: GdalInputOptions
-    outputOptions: GdalOutputOptions
-    configOptions: dict | None = None
+    input_options: GdalInputOptions
+    output_options: GdalOutputOptions
+    config_options: dict | None = None
 
 
 @dataclass
 class GdalWarpBoundsSpatialSubset:
-    outputBounds: tuple[float, float, float, float]
-    outputBoundsSRS: str | None = None
+    output_bounds: tuple[float, float, float, float]
+    output_bounds_srs: str | None = None
 
 
 @dataclass
 class GdalWarpCutlineSpatialSubset:
     cutline_wkt: str
     cutline_srs: str | None = None
-    cutline_layer: str | None = None
     cutline_where: str | None = None
     cutline_sql: str | None = None
     cutline_blend: int | None = None
@@ -70,10 +62,10 @@ class GdalWarpOptions:
     spatial_subset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None = None
     target_srs: str | None = None
     source_srs: str | None = None
-    srcAlpha: bool | None = None
-    dstAlpha: bool | None = None
+    src_alpha: bool | None = None
+    dst_alpha: bool | None = None
     multithreaded: bool = True
-    copyMetadata: bool = True
+    copy_metadata: bool = True
 
 
 @dataclass

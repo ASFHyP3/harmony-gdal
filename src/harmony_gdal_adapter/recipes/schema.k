@@ -2,11 +2,11 @@ schema Recipe:
     inner: GdalWarpRecipe | GdalTranslateRecipe
 
 schema GdalWarpRecipe:
-    warpOptions: GdalWarpOptions
-    gdalOptions: GdalOptions
+    warp_options: GdalWarpOptions
+    gdal_options: GdalOptions
 
 schema GdalTranslateRecipe:
-    gdalOptions: GdalOptions
+    gdal_options: GdalOptions
 
 schema GdalOptions:
     """GdalOptions specifies the options which are common to both GDAL Warp and Translate operations.
@@ -20,9 +20,9 @@ schema GdalOptions:
     configOptions : dict, optional, default is None
         The GDAL configuration options to use.
     """
-    inputOptions: GdalInputOptions
-    outputOptions: GdalOutputOptions
-    configOptions?: dict
+    input_options: GdalInputOptions
+    output_options: GdalOutputOptions
+    config_options?: dict
 
 schema GdalInputOptions:
     """GdalInputOptions specifies the options which are used to template the srcDS input string.
@@ -39,49 +39,22 @@ schema GdalInputOptions:
         The input file path to perform operations on.
     """
     driver: "HDF5" | "NETCDF"
-    virtualFilesystem?: "vsicurl" | "vsis3"
-    datasetPath: str
-    inputFilePath: str
+    virtual_filesystem?: "vsicurl" | "vsis3"
+    dataset_path: str
+    input_file_path: str
 
 schema GdalOutputOptions:
     """GdalOutputOptions specifies the output options to use.
 
     Attributes
     ----------
-    outputType : GdalOutput
-        The output format to use. This option sets the extension the file uses and the raster driver which is used for output.
+    outputType : str, optional, default is GTiff
+        The raster driver to use for output. See [here](https://gdal.org/en/stable/drivers/raster/index.html) for a list of available GDAL raster drivers.
     outputFilePath : str, default is "output"
         The file path to output to.
     """
-    outputType: GdalOutput
-    outputFilePath: str = "output"
-
-    check:
-        outputType in [GdalGTiffOutput, GdalCogOutput]
-
-schema GdalOutput:
-    """GdalOutput specifies the output file type to use.
-
-    Attributes
-    ----------
-    name : str
-        The name of the raster driver to use for output. See [here](https://gdal.org/en/stable/drivers/raster/index.html) for a list of available GDAL raster drivers.
-        This maps to the format option in osgeo.gdal.WarpOptions or osgeo.gdal.TranslateOptions.
-    extension: str
-        The desired file extension.
-    """
-    name: str
-    extension: str
-
-GdalGTiffOutput = GdalOutput {
-    name: "GTiff"
-    extension: ".tif"
-}
-
-GdalCogOutput = GdalOutput {
-    name: "COG"
-    extension: ".tif"
-}
+    output_type: "GTiff" | "COG" = "GTiff"
+    output_file_path: str = "output"
 
 schema GdalWarpOptions:
     """GdalWarpOptions specifies the GDAL options specific to Warp operations.
@@ -109,13 +82,13 @@ schema GdalWarpOptions:
         Whether to copy the source metadata.
         Maps directly to GDAL's copyMetadata option in osgeo.gdal.WarpOptions.
     """
-    spatialSubset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
-    targetSRS?: str
-    sourceSRS?: str
-    srcAlpha?: bool
-    dstAlpha?: bool
+    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
+    target_srs?: str
+    source_srs?: str
+    src_alpha?: bool
+    dst_alpha?: bool
     multithreaded: bool = True
-    copyMetadata: bool = True
+    copy_metadata: bool = True
 
 schema GdalWarpBoundsSpatialSubset:
     """GdalWarpBoundsSpatialSubset allows performing spatial subsetting with a pair of points defining a bounding box.
@@ -129,8 +102,8 @@ schema GdalWarpBoundsSpatialSubset:
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
-    outputBounds: (float, float, float, float)
-    outputBoundsSRS: str = "WGS84"
+    output_bounds: (float, float, float, float)
+    output_bounds_srs: str = "WGS84"
 
 schema GdalWarpCutlineSpatialSubset:
     """GdalWarpCutlineSpatialSubset allows performing spatial subsetting with a WKT string utilizing GDAL Warp's cutline options.
@@ -156,10 +129,10 @@ schema GdalWarpCutlineSpatialSubset:
         Wether to use the cutline extent for output bounds.
         Maps directly to GDALts cropToCutline option isn osgeo.gdal.WarpOptions.
     """
-    cutlineWKT: str
-    cutlineWHERE: str
-    cutlineSQL: str
-    cutlineBlend: int
-    cutlineSRS: str = "WGS84"
-    cropToCutline: bool = True
+    cutline_wkt: str
+    cutline_where?: str
+    cutline_sql?: str
+    cutline_blend?: int
+    cutline_srs: str = "WGS84"
+    crop_to_cutline: bool = True
 
