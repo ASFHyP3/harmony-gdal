@@ -1,38 +1,37 @@
 import schema
 
-collectionShortname = option("collection_shortname", 'str', False, None)
-inputFilename = option("input_filename", 'str')
-targetSRS = option("target_srs", 'str', False, None)
-spatialExtents = option("spatial_extents", 'str', False, None)
-outputType = option("output_type", 'str')
-outputFilename = option("output_filename", 'str')
-variablePath = option("variable_path", 'str')
+collection_shortname = option("collection_shortname", 'str', False, None)
+input_filename = option("input_filename", 'str')
+target_srs = option("target_srs", 'str', False, None)
+spatial_extents = option("spatial_extents", 'str', False, None)
+output_type = option("output_type", 'str')
+output_filename = option("output_filename", 'str')
+variable_path = option("variable_path", 'str')
 
 _gdal_options = schema.GdalOptions {
-    inputOptions = schema.GdalInputOptions {
+    input_options = schema.GdalInputOptions {
         driver = "HDF5"
-        dataset_path = variablePath
-        filename = inputFilename
+        dataset_path = variable_path
+        input_file_path = input_filename
     }
-    outputOptions = schema.GdalOutputOptions {
-        outputType = schema.GdalGTiffOutput
-        outputName = outputFilename
+    output_options = schema.GdalOutputOptions {
+        output_file_path = output_filename
     }
 }
 
 recipe: schema.Recipe = schema.Recipe {
-    if targetSRS or spatialExtents:
+    if target_srs or spatial_extents:
         inner = schema.GdalWarpRecipe {
             warp_options = schema.GdalWarpOptions {
-                dstAlpha = True
-                if spatialExtents:
+                dst_alpha = True
+                if spatial_extents:
                     spatial_subset = schema.GdalWarpCutlineSpatialSubset {
-                        cutline_wkt = spatialExtents
+                        cutline_wkt = spatial_extents
                         cutline_srs = "WGS84"
                         crop_to_cutline = True
                     }
-                if targetSRS:
-                    target_srs = targetSRS
+                if target_srs:
+                    target_srs = target_srs
             }
             gdal_options = _gdal_options
         }
