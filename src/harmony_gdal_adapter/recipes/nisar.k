@@ -8,36 +8,36 @@ outputType = option("output_type", 'str')
 outputFilename = option("output_filename", 'str')
 variablePath = option("variable_path", 'str')
 
-_gdal_options = schema.GdalOptions {
+_gdalOptions = schema.GdalOptions {
     inputOptions = schema.GdalInputOptions {
         driver = "HDF5"
-        dataset_path = variablePath
-        filename = inputFilename
+        datasetPath = variablePath
+        inputFilePath = inputFilename
     }
     outputOptions = schema.GdalOutputOptions {
         outputType = schema.GdalGTiffOutput
-        outputName = outputFilename
+        outputFilePath = outputFilename
     }
 }
 
 recipe: schema.Recipe = schema.Recipe {
     if targetSRS or spatialExtents:
         inner = schema.GdalWarpRecipe {
-            warp_options = schema.GdalWarpOptions {
+            warpOptions = schema.GdalWarpOptions {
                 dstAlpha = True
                 if spatialExtents:
-                    spatial_subset = schema.GdalWarpCutlineSpatialSubset {
-                        cutline_wkt = spatialExtents
-                        cutline_srs = "WGS84"
-                        crop_to_cutline = True
+                    spatialSubset = schema.GdalWarpCutlineSpatialSubset {
+                        cutlineWKT = spatialExtents
+                        cutlineSRS = "WGS84"
+                        cropToCutline = True
                     }
                 if targetSRS:
-                    target_srs = targetSRS
+                    targetSRS = targetSRS
             }
-            gdal_options = _gdal_options
+            gdalOptions = _gdalOptions
         }
     else:
         inner = schema.GdalTranslateRecipe {
-            gdal_options: _gdal_options
+            gdalOptions: _gdalOptions
         }
 }
