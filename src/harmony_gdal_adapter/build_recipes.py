@@ -93,9 +93,6 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     Returns:
         Recipe: The built recipe from the input options
     """
-    print(options)
-    print(type(options))
-    print('\n')
     recipe_args = [kcl.Argument(name=name, value=value) for name, value in asdict(options).items()]
     args = kcl.ExecProgramArgs(
         k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],

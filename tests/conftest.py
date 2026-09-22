@@ -1,15 +1,13 @@
-# from harmony_gdal_adapter import gdal as hgdal
-import pytest
 from pathlib import Path
-from osgeo import osr
-from xarray import DataArray, DataTree, Dataset, Variable
-from harmony_gdal_adapter.build_recipes import build_recipe,RecipeInputOptions
-from mock.gcov import mock_gcov_granule
-from osgeo.gdal import Translate, Warp
 
-#the mock_gcov_granules.h5 in tests/data/ is generated outside this script.
+import pytest
+
+from mock.gcov import mock_gcov_granule
+
+
+#Testing note: the mock_gcov_granules.h5 in tests/data/ is generated outside this script.
 #It is similar to nisar-py. Additionally, a "variable_extraction.tif", "spatial_subset.tif"
-#and "reproject.tif" need to be generated and places into that folder
+#and "reproject.tif" need to be generated and places into that folder.
 
 @pytest.fixture
 def data_dir():

@@ -9,6 +9,9 @@ dependencies:
   - setuptools_scm
   - pytest
   - pytest-cov
+  - xarray
+  - h5netcdf
+  - numpy
   # For running
   - gdal
   - libgdal-hdf5
@@ -19,5 +22,3 @@ dependencies:
   - pip:
       - -e .[develop]
 
-  - xarray
-  - numpy

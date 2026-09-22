@@ -1,24 +1,14 @@
-# git from harmony_gdal_adapter import gdal_adapter
-# from conftest import make_options
-# from harmony_gdal_adapter import gdal as hgdal
-from pathlib import Path
-
-from harmony_gdal_adapter.build_recipes import build_recipe,RecipeInputOptions,GdalWarpRecipe,GdalTranslateRecipe
-from harmony_gdal_adapter.gdal import execute_recipe
 import filecmp
-import pytest
-# from tests.conftest import test_data_dir
-from dataclasses import asdict
 
-# make_gcov_granule(test_data_dir)
+from harmony_gdal_adapter.build_recipes import GdalTranslateRecipe, GdalWarpRecipe, RecipeInputOptions, build_recipe
+from harmony_gdal_adapter.gdal import execute_recipe
+
 
 def make_options(**overrides) -> RecipeInputOptions:
-    defaults = dict(
-        collection_shortname  = "foobar",
-        output_type = "GTiff",
-        output_filename = "data/output.tif",
-        variable_path = "//science/LSAR/GCOV/grids/frequencyA/HHHH"
-    )
+    defaults = {"collection_shortname": "foobar",
+                "output_type": "GTiff",
+                "output_filename": "data/output.tif",
+                "variable_path": "//science/LSAR/GCOV/grids/frequencyA/HHHH"}
     defaults.update(overrides)
     return RecipeInputOptions(**defaults)
 
@@ -45,7 +35,7 @@ def test_spatial_subset(data_dir,gcov_granule):
     assert filecmp.cmp(output,data_dir/"spatial_subset_example.tif")
 
 def test_reproject(data_dir,gcov_granule):
-    output = data_dir / "output_spatial_subset.tif"
+    output = data_dir / "output_reproject.tif"
     overrides = {"output_filename": str(output),
                  "input_filename": str(gcov_granule),
                  "target_srs": "EPSG:3412"}

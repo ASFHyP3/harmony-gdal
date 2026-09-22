@@ -1,15 +1,16 @@
 from osgeo import osr
 from xarray import DataArray, DataTree, Dataset, Variable
 
+
 osr.UseExceptions()
 
 NCOLS, NROWS = 100, 50
-STEP_SIZE = 100.0   # pixel size in meters; sets the geotransform
+STEP_SIZE = 100.0   # pixel size in meters;
 VALUE_SCALE = 100   # stretches stored values only; unrelated to geography
 DEFAULT_EPSG = 32606  # UTM zone 6N
 
 def _coordinate_variable(dim: str, values: list, is_x: bool) -> Variable:
-    """"Create the coordinate variable emulating real GCOV product"""
+    """Create the coordinate variable emulating real GCOV product"""
     attrs = {
         'standard_name': 'projection_x_coordinate' if is_x else 'projection_y_coordinate',
         'long_name': f'{"X" if is_x else "Y"} coordinates of projection',
@@ -34,25 +35,8 @@ def _projection_variable(epsg: int) -> DataArray:
         'false_easting': srs.GetProjParm(osr.SRS_PP_FALSE_EASTING, 0.0),
         'false_northing': srs.GetProjParm(osr.SRS_PP_FALSE_NORTHING, 0.0),
     }
-    if ogc_projection == 'Polar_Stereographic':
-        attrs.update(
-            grid_mapping_name='polar_stereographic',
-            latitude_of_projection_origin=srs.GetProjParm(osr.SRS_PP_LATITUDE_OF_ORIGIN, 90.0),
-            longitude_of_projection_origin=srs.GetProjParm(osr.SRS_PP_CENTRAL_MERIDIAN, 0.0),
-            standard_parallel=srs.GetProjParm(osr.SRS_PP_LATITUDE_OF_ORIGIN, 70.0),
-            straight_vertical_longitude_from_pole=srs.GetProjParm(osr.SRS_PP_CENTRAL_MERIDIAN, -45.0),
-        )
-    elif ogc_projection == 'Transverse_Mercator':
-        attrs.update(
-            grid_mapping_name='transverse_mercator',
-            utm_zone_number=srs.GetUTMZone(),
-            longitude_of_central_meridian=srs.GetProjParm(osr.SRS_PP_CENTRAL_MERIDIAN, 0.0),
-            latitude_of_projection_origin=srs.GetProjParm(osr.SRS_PP_LATITUDE_OF_ORIGIN, 0.0),
-            scale_factor_at_central_meridian=srs.GetProjParm(osr.SRS_PP_SCALE_FACTOR, 0.9996),
-        )
-    else:
-        # Fallback
-        attrs['grid_mapping_name'] = (ogc_projection or 'unknown').lower()
+
+    attrs['grid_mapping_name'] = (ogc_projection or 'unknown').lower()
 
     return DataArray(epsg, attrs=attrs)
 

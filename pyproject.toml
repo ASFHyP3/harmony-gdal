@@ -38,6 +38,9 @@ develop = [
     "pytest",
     "pytest-console-scripts",
     "pytest-cov",
+    "numpy",
+    "xarray",
+    "h5netcdf"
 ]
 
 [project.scripts]

@@ -55,8 +55,9 @@ coverage.xml
 .pytest_cache/
 cover/
 
-#pytest oututs (if generated)
+#pytest outputs
 ./.pytest_tmp
+/tests/data/output_*.tif
 
 # Translations
 *.mo
