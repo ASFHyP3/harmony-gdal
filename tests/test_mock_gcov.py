@@ -14,15 +14,18 @@ def test_raster_has_crs_and_shape(gcov_subdataset, frequency, variable):
     assert ds.GetSpatialRef().GetAuthorityCode(None) == str(DEFAULT_EPSG)
     assert (ds.RasterXSize, ds.RasterYSize) == (NCOLS, NROWS)
 
+
 def test_hhhh_values_encode_column(gcov_subdataset):
     arr = gdal.Open(gcov_subdataset('frequencyA', 'HHHH')).ReadAsArray()
     expected_row = np.arange(NCOLS) * VALUE_SCALE
     np.testing.assert_array_equal(arr, np.broadcast_to(expected_row, arr.shape))
 
+
 def test_vvvv_values_encode_row(gcov_subdataset):
     arr = gdal.Open(gcov_subdataset('frequencyB', 'VVVV')).ReadAsArray()
     expected_row = np.arange(NCOLS) * VALUE_SCALE
     np.testing.assert_array_equal(arr, np.broadcast_to(expected_row, arr.shape))
+
 
 def test_vhvh_values_encode_row(gcov_subdataset):
     arr = gdal.Open(gcov_subdataset('frequencyB', 'VHVH')).ReadAsArray()

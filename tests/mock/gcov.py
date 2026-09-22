@@ -5,9 +5,10 @@ from xarray import DataArray, DataTree, Dataset, Variable
 osr.UseExceptions()
 
 NCOLS, NROWS = 100, 50
-STEP_SIZE = 100.0   # pixel size in meters;
-VALUE_SCALE = 100   # stretches stored values only; unrelated to geography
+STEP_SIZE = 100.0  # pixel size in meters;
+VALUE_SCALE = 100  # stretches stored values only; unrelated to geography
 DEFAULT_EPSG = 32606  # UTM zone 6N
+
 
 def _coordinate_variable(dim: str, values: list, is_x: bool) -> Variable:
     """Create the coordinate variable emulating real GCOV product"""
