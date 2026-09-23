@@ -30,11 +30,11 @@ class GdalInputOptions:
     ----------
     driver : str
         The raster driver to use for loading the input dataset. Must be a valid GDAL raster driver. See [here](https://gdal.org/en/stable/drivers/raster/index.html) for a list of available GDAL raster drivers.
-    virtualFilesystem : str, optional, default is None
+    virtual_filesystem : str, optional, default is None
         The virtual filesystem to use for loading the input dataset. Must be a valid GDAL virtual filesystem name. See [here](https://gdal.org/en/stable/user/virtual_file_systems.html) for a list of available GDAL virtual filesystems.
-    datasetPath : str
+    dataset_path : str
         The dataset, or variable to extract from the input file.
-    inputFilePath : str
+    input_file_path : str
         The input file path to perform operations on.
     """
 
@@ -50,9 +50,9 @@ class GdalOutputOptions:
 
     Attributes:
     ----------
-    outputType (str, optional):
+    output_type (str, optional):
         The raster driver to use for output. See [here](https://gdal.org/en/stable/drivers/raster/index.html) for a list of available GDAL raster drivers.
-    outputFilePath (str, default):
+    output_file_path (str, default):
         The file path to output to.
     """
 
@@ -66,11 +66,11 @@ class GdalOptions:
 
     Attributes:
     ----------
-    inputOptions (GdalInputOptions):
+    input_options (GdalInputOptions):
         The input file path, type, and whether to use a virtual filesystem.
-    outputOptions (GdalOutputOptions):
+    output_options (GdalOutputOptions):
         The output file path and type.
-    configOptions (dict, optional):
+    config_options (dict, optional):
         The GDAL configuration options to use.
     """
 
@@ -137,24 +137,24 @@ class GdalWarpOptions:
 
     Attributes:
     ----------
-    spatialSubset (GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset, optional):
+    spatial_subset (GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset, optional):
         Specify a spatial subsetting operation to perform. If none is specified no spatial subsetting operation will be performed.
-    targetSRS (str, optional):
+    target_srs (str, optional):
         Specify a spatial reference system to reproject into. Must be an accepted GDAL SRS string. If none is specified no reprojection operation will be performed.
         Maps directly to GDAL's targetSRS option in osgeo.gdal.WarpOptions.
-    sourceSRS (str, optional):
+    source_srs (str, optional):
         Specify the spatial reference system which the input dataset is referenced in. If none is specified GDAL will utilize the spatial reference system supplied by the input dataset.
         Maps directly to GDAL's sourceSRS option in osgeo.gdal.WarpOptions.
-    srcAlpha (bool, optional):
+    src_alpha (bool, optional):
         Whether to force the input dataset to be considered as an alpha band. If none is specified GDAL will attempt to automatically determine if the input dataset contains an alpha band.
         Maps directly to GDAL's srcAlpha option in osgeo.gdal.WarpOptions.
-    dstAlpha (bool, optional):
+    dst_alpha (bool, optional):
         Whether to force the creation of an output alpha band. If none is specified GDAL will attempt to automatically determine if the creation of an output alpha band is suitable.
         Maps directly to GDAL's dstAlpha option in osgeo.gdal.WarpOptions.
     multithreaded (bool):
         Whether to use multithreaded compute and I/O operations.
         Maps directly to GDAL's multithreaded option in osgeo.gdal.WarpOptions.
-    copyMetadata (bool):
+    copy_metadata (bool):
         Whether to copy the source metadata.
         Maps directly to GDAL's copyMetadata option in osgeo.gdal.WarpOptions.
     """
