@@ -59,21 +59,21 @@ def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
             flattened_recipe_dictionary[key] = value
 
     recipe_gdal_mapping = {
-        'target_srs': 'dstSRS',
-        'source_srs': 'srcSRS',
-        'src_alpha': 'srcAlpha',
-        'dst_alpha': 'dstAlpha',
+        'targetSRS': 'dstSRS',
+        'sourceSRS': 'srcSRS',
+        'srcAlpha': 'srcAlpha',
+        'dstAlpha': 'dstAlpha',
         'multithreaded': 'multithread',
-        'copy_metadata': 'copyMetadata',
-        'spatial_subset.output_bounds': 'outputBounds',
-        'spatial_subset.output_bounds_srs': 'outputBoundsSRS',
-        'spatial_subset.cutline_wkt': 'cutlineWKT',
-        'spatial_subset.cutline_srs': 'cutlineSRS',
-        'spatial_subset.cutline_layer': 'cutlineLayer',
-        'spatial_subset.cutline_where': 'cutlineWhere',
-        'spatial_subset.cutline_sql': 'cutlineSQL',
-        'spatial_subset.cutline_blend': 'cutlineBlend',
-        'spatial_subset.crop_to_cutline': 'cropToCutline',
+        'copyMetadata': 'copyMetadata',
+        'spatialSubset.outputBounds': 'outputBounds',
+        'spatialSubset.output_boundsSRS': 'outputBoundsSRS',
+        'spatialSubset.cutlineWKT': 'cutlineWKT',
+        'spatialSubset.cutlineSRS': 'cutlineSRS',
+        'spatialSubset.cutlineLayer': 'cutlineLayer',
+        'spatialSubset.cutlineWhere': 'cutlineWhere',
+        'spatialSubset.cutlineSQL': 'cutlineSQL',
+        'spatialSubset.cutlineBlend': 'cutlineBlend',
+        'spatialSubset.cropToCutline': 'cropToCutline',
     }
 
     for maps_from, maps_to in recipe_gdal_mapping.items():

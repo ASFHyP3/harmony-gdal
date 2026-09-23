@@ -95,10 +95,10 @@ schema GdalWarpBoundsSpatialSubset:
 
     Attributes
     ----------
-    output_bounds : (float, float, float, float)
+    outputBounds : (float, float, float, float)
         The bounding box to spatially subset to.
         Maps directly to GDAL's outputBounds option in osgeo.gdal.WarpOptions.
-    output_bounds_srs : str, default is WGS84
+    outputBoundsSRS : str, default is WGS84
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
