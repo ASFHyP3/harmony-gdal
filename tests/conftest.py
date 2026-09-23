@@ -17,8 +17,10 @@ def data_dir():
 
 @pytest.fixture
 def gcov_granule(tmp_path) -> Path:
-    """ "Generate mock GCOV file for every test.
-    Can be manually generated with: pytest --basetemp=./.pytest_tmp"""
+    """Generate mock GCOV file for every test.
+
+    Can be manually generated with: pytest --basetemp=./.pytest_tmp.
+    """
     return mock_gcov_granule(tmp_path)
 
 
@@ -28,6 +30,7 @@ GCOV_GRIDS = '//science/LSAR/GCOV/grids'
 @pytest.fixture
 def gcov_subdataset(gcov_granule):
     """Return GDAL path of to raster.
+
     Usage in a test: gcov_subdataset('frequencyA', 'HHHH')
     """
 

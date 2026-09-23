@@ -11,7 +11,7 @@ DEFAULT_EPSG = 32606  # UTM zone 6N
 
 
 def _coordinate_variable(dim: str, values: list, is_x: bool) -> Variable:
-    """Create the coordinate variable emulating real GCOV product"""
+    """Create the coordinate variable emulating real GCOV product."""
     attrs = {
         'standard_name': 'projection_x_coordinate' if is_x else 'projection_y_coordinate',
         'long_name': f'{"X" if is_x else "Y"} coordinates of projection',
@@ -22,7 +22,7 @@ def _coordinate_variable(dim: str, values: list, is_x: bool) -> Variable:
 
 
 def _projection_variable(epsg: int) -> DataArray:
-    """Create projection as variable emulating real GCOV product"""
+    """Create projection as variable emulating real GCOV product."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(epsg)
     ogc_projection = srs.GetAttrValue('PROJECTION')  # e.g. 'Transverse_Mercator', 'Polar_Stereographic'

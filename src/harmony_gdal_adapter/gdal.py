@@ -1,3 +1,5 @@
+"""Execute GDAL recipes."""
+
 from dataclasses import asdict
 
 from osgeo.gdal import Translate, Warp
@@ -11,43 +13,51 @@ from harmony_gdal_adapter.build_recipes import (
 
 
 def execute_recipe(recipe: Recipe) -> None:
-    srcDS = build_input_string(recipe)
-    destName = build_output_string(recipe)
+    """Executes a built Recipe as a GDAL operation.
+
+    Args:
+        recipe (Recipe): The Recipe representing a given GDAL translate or warp operation.
+
+    Returns:
+        None
+    """
+    srcDS = _build_input_string(recipe)
+    destName = _build_output_string(recipe)
     if isinstance(recipe.inner, GdalTranslateRecipe):
-        execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
+        _execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
     elif isinstance(recipe.inner, GdalWarpRecipe):
-        execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
+        _execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
     else:
         raise TypeError('recipe must be GdalTranslateRecipe or GdalWarpRecipe')
 
 
-def execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTranslateRecipe) -> None:
-    translate_options = build_gdal_translate_options(recipe)
+def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTranslateRecipe) -> None:
+    translate_options = _build_gdal_translate_options(recipe)
     Translate(destName, srcDS, **translate_options)
 
 
-def execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
-    warp_options = build_gdal_warp_options(recipe)
+def _execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
+    warp_options = _build_gdal_warp_options(recipe)
     Warp(destName, srcDS, **warp_options)
 
 
-def build_input_string(recipe: Recipe) -> str:
+def _build_input_string(recipe: Recipe) -> str:
     input_options = recipe.inner.gdal_options.input_options
     return f'{input_options.driver}:{input_options.virtual_filesystem or ""}{input_options.input_file_path}:{input_options.dataset_path}'
 
 
-def build_output_string(recipe: Recipe) -> str:
+def _build_output_string(recipe: Recipe) -> str:
     output_options = recipe.inner.gdal_options.output_options
     return str(output_options.output_file_path)
 
 
-def build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
-    translate_options = build_gdal_output_options(recipe.gdal_options.output_options)
+def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
+    translate_options = _build_gdal_output_options(recipe.gdal_options.output_options)
     return translate_options
 
 
-def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
-    warp_options = build_gdal_output_options(recipe.gdal_options.output_options)
+def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
+    warp_options = _build_gdal_output_options(recipe.gdal_options.output_options)
 
     flattened_recipe_dictionary = {}
 
@@ -83,7 +93,7 @@ def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
     return warp_options
 
 
-def build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
+def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
     gdal_output_options = {}
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options

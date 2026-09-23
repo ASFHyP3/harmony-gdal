@@ -1,4 +1,4 @@
-# """Harmony service for ."""
+"""Harmony service for the GDAL Adapter."""
 
 # import argparse
 # import tempfile
