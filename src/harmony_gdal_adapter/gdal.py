@@ -32,26 +32,26 @@ def execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) 
 
 
 def build_input_string(recipe: Recipe) -> str:
-    input_options = recipe.inner.gdal_options.input_options
-    return f'{input_options.driver}:{input_options.virtual_filesystem or ""}{input_options.input_file_path}:{input_options.dataset_path}'
+    input_options = recipe.inner.gdalOptions.inputOptions
+    return f'{input_options.driver}:{input_options.virtualFilesystem or ""}{input_options.inputFilePath}:{input_options.datasetPath}'
 
 
 def build_output_string(recipe: Recipe) -> str:
-    output_options = recipe.inner.gdal_options.output_options
-    return str(output_options.output_file_path)
+    output_options = recipe.inner.gdalOptions.outputOptions
+    return str(output_options.outputFilePath)
 
 
 def build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
-    translate_options = build_gdal_output_options(recipe.gdal_options.output_options)
+    translate_options = build_gdal_output_options(recipe.gdalOptions.outputOptions)
     return translate_options
 
 
 def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
-    warp_options = build_gdal_output_options(recipe.gdal_options.output_options)
+    warp_options = build_gdal_output_options(recipe.gdalOptions.outputOptions)
 
     flattened_recipe_dictionary = {}
 
-    for key, value in asdict(recipe.warp_options).items():
+    for key, value in asdict(recipe.warpOptions).items():
         if isinstance(value, dict):
             for inner_key, inner_value in value.items():
                 flattened_recipe_dictionary[f'{key}.{inner_key}'] = inner_value
@@ -85,5 +85,5 @@ def build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
 
 def build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
     gdal_output_options = {}
-    gdal_output_options['format'] = output_options.output_type
+    gdal_output_options['format'] = output_options.outputType
     return gdal_output_options

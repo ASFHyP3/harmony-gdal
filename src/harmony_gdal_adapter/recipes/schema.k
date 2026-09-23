@@ -2,11 +2,11 @@ schema Recipe:
     inner: GdalWarpRecipe | GdalTranslateRecipe
 
 schema GdalWarpRecipe:
-    warp_options: GdalWarpOptions
-    gdal_options: GdalOptions
+    warpOptions: GdalWarpOptions
+    gdalOptions: GdalOptions
 
 schema GdalTranslateRecipe:
-    gdal_options: GdalOptions
+    gdalOptions: GdalOptions
 
 schema GdalOptions:
     """GdalOptions specifies the options which are common to both GDAL Warp and Translate operations.
@@ -20,9 +20,9 @@ schema GdalOptions:
     configOptions : dict, optional, default is None
         The GDAL configuration options to use.
     """
-    input_options: GdalInputOptions
-    output_options: GdalOutputOptions
-    config_options?: dict
+    inputOptions: GdalInputOptions
+    outputOptions: GdalOutputOptions
+    configOptions?: dict
 
 schema GdalInputOptions:
     """GdalInputOptions specifies the options which are used to template the srcDS input string.
@@ -39,9 +39,9 @@ schema GdalInputOptions:
         The input file path to perform operations on.
     """
     driver: "HDF5" | "NETCDF"
-    virtual_filesystem?: "vsicurl" | "vsis3"
-    dataset_path: str
-    input_file_path: str
+    virtualFilesystem?: "vsicurl" | "vsis3"
+    datasetPath: str
+    inputFilePath: str
 
 schema GdalOutputOptions:
     """GdalOutputOptions specifies the output options to use.
@@ -53,8 +53,8 @@ schema GdalOutputOptions:
     outputFilePath : str, default is "output"
         The file path to output to.
     """
-    output_type: "GTiff" | "COG" = "GTiff"
-    output_file_path: str = "output"
+    outputType: "GTiff" | "COG" = "GTiff"
+    outputFilePath: str = "output"
 
 schema GdalWarpOptions:
     """GdalWarpOptions specifies the GDAL options specific to Warp operations.
@@ -82,13 +82,13 @@ schema GdalWarpOptions:
         Whether to copy the source metadata.
         Maps directly to GDAL's copyMetadata option in osgeo.gdal.WarpOptions.
     """
-    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
-    target_srs?: str
-    source_srs?: str
-    src_alpha?: bool
-    dst_alpha?: bool
+    spatialSubset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
+    targetSRS?: str
+    sourceSRS?: str
+    srcAlpha?: bool
+    dstAlpha?: bool
     multithreaded: bool = True
-    copy_metadata: bool = True
+    copyMetadata: bool = True
 
 schema GdalWarpBoundsSpatialSubset:
     """GdalWarpBoundsSpatialSubset allows performing spatial subsetting with a pair of points defining a bounding box.
@@ -102,37 +102,37 @@ schema GdalWarpBoundsSpatialSubset:
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
-    output_bounds: (float, float, float, float)
-    output_bounds_srs: str = "WGS84"
+    outputBounds: (float, float, float, float)
+    outputBoundsSRS: str = "WGS84"
 
 schema GdalWarpCutlineSpatialSubset:
     """GdalWarpCutlineSpatialSubset allows performing spatial subsetting with a WKT string utilizing GDAL Warp's cutline options.
 
     Attributes
     ----------
-    cutline_wkt : str
+    cutlineWKt : str
         The cutline WKT string to operate on. Must be a WKT POLYGON or MULTIPOLYGON string.
         Maps directly to GDAL's cutlineWKT option in osgeo.gdal.WarpOptions.
-    cutline_srs : str, default is WGS84
+    cutlineSRS : str, default is WGS84
         The spatial reference system of the cutline WKT string. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's cutlineSRS option in osgeo.gdal.WarpOptions.
-    cutline_where : str, optional, default is None
+    cutlineWhere : str, optional, default is None
         The cutline WHERE clause.
         Maps directly to GDAL's cutlineWHERE option in osgeo.gdal.WarpOptions.
-    cutline_sql : str, optional, default is None
+    cutlineSQL : str, optional, default is None
         The cutline SQL statement.
         Maps directly to GDAL's cutlineSQL option in osgeo.gdal.WarpOptions.
-    cutline_blend : int, optional, default is None
+    cutlineBlend : int, optional, default is None
         The cutline blend distance in pixels.
         Maps directly to GDAL's cutlineBlend option in osgeo.gdal.WarpOptions.
-    crop_to_cutline : bool, default is True
+    cropToCutline : bool, default is True
         Wether to use the cutline extent for output bounds.
         Maps directly to GDALts cropToCutline option isn osgeo.gdal.WarpOptions.
     """
-    cutline_wkt: str
-    cutline_where?: str
-    cutline_sql?: str
-    cutline_blend?: int
-    cutline_srs: str = "WGS84"
-    crop_to_cutline: bool = True
+    cutlineWKT: str
+    cutlineWhere?: str
+    cutlineSQL?: str
+    cutlineBlend?: int
+    cutlineSRS: str = "WGS84"
+    cropToCutline: bool = True
 

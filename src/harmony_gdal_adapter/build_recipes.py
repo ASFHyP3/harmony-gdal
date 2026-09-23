@@ -11,72 +11,72 @@ from kcl_lib import api as kcl
 class RecipeInputOptions:
     """Input options used by recipes."""
 
-    collection_shortname: str
-    input_filename: str
-    output_type: str
-    output_filename: str
-    variable_path: str
-    target_srs: str | None = None
-    spatial_extents: str | None = None
+    collectionShortname: str
+    inputFilename: str
+    outputType: str
+    outputFilename: str
+    variablePath: str
+    targetSRS: str | None = None
+    spatialExtents: str | None = None
 
 
 @dataclass
 class GdalInputOptions:
     driver: Literal['HDF5', 'NETCDF']
-    dataset_path: str
-    input_file_path: str
-    virtual_filesystem: Literal['/vsicurl/', '/vsis3/'] | None = None
+    datasetPath: str
+    inputFilePath: str
+    virtualFilesystem: Literal['/vsicurl/', '/vsis3/'] | None = None
 
 
 @dataclass
 class GdalOutputOptions:
-    output_type: Literal['GTiff', 'COG']
-    output_file_path: str = 'output'
+    outputType: Literal['GTiff', 'COG']
+    outputFilePath: str = 'output'
 
 
 @dataclass
 class GdalOptions:
-    input_options: GdalInputOptions
-    output_options: GdalOutputOptions
-    config_options: dict | None = None
+    inputOptions: GdalInputOptions
+    outputOptions: GdalOutputOptions
+    configOptions: dict | None = None
 
 
 @dataclass
 class GdalWarpBoundsSpatialSubset:
-    output_bounds: tuple[float, float, float, float]
-    output_bounds_srs: str | None = None
+    outputBounds: tuple[float, float, float, float]
+    outputBondsSRS: str | None = None
 
 
 @dataclass
 class GdalWarpCutlineSpatialSubset:
-    cutline_wkt: str
-    cutline_srs: str | None = None
-    cutline_where: str | None = None
-    cutline_sql: str | None = None
-    cutline_blend: int | None = None
-    crop_to_cutline: bool = True
+    cutlineWKT: str
+    cutlineSRS: str | None = None
+    cutlineWhere: str | None = None
+    cutlineSQL: str | None = None
+    cutlineBlend: int | None = None
+    cropToCutline: bool = True
 
 
 @dataclass
 class GdalWarpOptions:
-    spatial_subset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None = None
-    target_srs: str | None = None
-    source_srs: str | None = None
-    src_alpha: bool | None = None
-    dst_alpha: bool | None = None
+    spatialSubset: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | None = None
+    targetSRS: str | None = None
+    sourceSRS: str | None = None
+    srcAlpha: bool | None = None
+    dstAlpha: bool | None = None
     multithreaded: bool = True
-    copy_metadata: bool = True
+    copyMetadata: bool = True
 
 
 @dataclass
 class GdalWarpRecipe:
-    warp_options: GdalWarpOptions
-    gdal_options: GdalOptions
+    warpOptions: GdalWarpOptions
+    gdalOptions: GdalOptions
 
 
 @dataclass
 class GdalTranslateRecipe:
-    gdal_options: GdalOptions
+    gdalOptions: GdalOptions
 
 
 @dataclass
