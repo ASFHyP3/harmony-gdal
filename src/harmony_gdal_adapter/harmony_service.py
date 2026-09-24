@@ -3,7 +3,6 @@
 import argparse
 import tempfile
 from pathlib import Path
-from typing import Tuple
 
 import harmony_service_lib
 import pystac
@@ -14,8 +13,8 @@ from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.gdal import execute_recipe
 
 
-def bbox_to_wkt(bbox: tuple[float, float, float, float]) -> str:
-    return f'POLYGON(({bbox[0]} {bbox[1]}, {bbox[2]} {bbox[3]}, {bbox[0]}, {bbox[1]}'
+def _bbox_to_wkt(bbox: tuple[float, float, float, float]) -> str:
+    return f'POLYGON(({bbox[0]} {bbox[1]}, {bbox[2]} {bbox[3]}, {bbox[0]}, {bbox[1]}))'
 
 
 class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
@@ -59,7 +58,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 target_srs=self.message.format.process('CRS')
                 if self.message.format and self.message.format.crs
                 else None,
-                spatial_extents=bbox_to_wkt(self.message.subset.process('bbox'))
+                spatial_extents=_bbox_to_wkt(self.message.subset.process('bbox'))
                 if self.message.subset and self.message.subset.bbox
                 else None,
             )
