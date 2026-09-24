@@ -30,7 +30,7 @@ def test_spatial_subset(data_dir, gcov_granule):
     overrides = {
         'output_filename': str(output),
         'input_filename': str(gcov_granule),
-        'spatial_extents': 'POLYGON((-151.470826 0.009020,-151.417068 0.009020,-151.417069 0.036081,-151.470827 0.036078,-151.470826 0.009020))',
+        'spatial_extents_wkt': 'POLYGON((-151.470826 0.009020,-151.417068 0.009020,-151.417069 0.036081,-151.470827 0.036078,-151.470826 0.009020))',
     }
     options = make_options(**overrides)
     recipe = build_recipe(options)
