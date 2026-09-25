@@ -2,7 +2,6 @@
 
 import argparse
 import tempfile
-from itertools import chain
 from pathlib import Path
 
 import harmony_service_lib
@@ -11,7 +10,7 @@ from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, stage
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
-from harmony_gdal_adapter.exceptions import InvalidProjectionError
+from harmony_gdal_adapter.exceptions import DownloadError, HGANoRetryException, UnsupportedFileFormatError
 from harmony_gdal_adapter.gdal import execute_recipe
 
 
@@ -33,17 +32,23 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
         pystac.Item
             a STAC catalog whose metadata and assets describe the service output
         """
+        if (requested_type := self.message.format.process('mime')) != 'image.tiff':
+            raise UnsupportedFileFormatError(requested_type)
+
         self.logger.info(f'Processing item {item.id}')
 
         granule_url = _get_asset_url(item, '.h5')
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            granule_filename = download(
-                url=granule_url,
-                destination_dir=temp_dir,
-                logger=self.logger,
-                access_token=self.message.accessToken,
-            )
+            try:
+                granule_filename = download(
+                    url=granule_url,
+                    destination_dir=temp_dir,
+                    logger=self.logger,
+                    access_token=self.message.accessToken,
+                )
+            except Exception as exception:  # noqa: BLE001
+                raise DownloadError(granule_url, str(exception))
 
             output_path = Path(f'{temp_dir}/output.tif')
 
@@ -53,7 +58,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 collection_shortname=str(source.process('shortName')),
                 output_type='COG',
                 variable_path=source.process('variables')[0],
-                target_srs=_validate_crs(self.message.format.process('CRS'))
+                target_srs=self.message.format.process('CRS')
                 if self.message.format and self.message.format.crs
                 else None,
                 spatial_extents_bounding_box=self.message.subset.process('bbox')
@@ -61,11 +66,12 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 else None,
             )
 
+            recipe = build_recipe(input_options)
+
             try:
-                recipe = build_recipe(input_options)
                 execute_recipe(recipe)
-            except HarmonyException as e:
-                raise HarmonyException(str(e))
+            except RuntimeError as e:
+                raise HGANoRetryException(str(e))
 
             url = stage(
                 local_filename=str(output_path),
@@ -88,18 +94,6 @@ def _get_asset_url(item: pystac.Item, suffix: str) -> str:
         return next(asset.href for asset in item.assets.values() if asset.href.endswith(suffix))
     except StopIteration:
         raise HarmonyException(f'No {suffix} asset found for {item.id}')
-
-
-def _validate_crs(crs: str) -> str:
-    valid_codes = ['EPSG:4326', 'EPSG:3031', 'EPSG:3413']
-
-    for code in chain(range(32601, 32661), range(32701, 32761)):
-        valid_codes += f'EPSG:{code}'
-
-    if crs not in valid_codes:
-        raise InvalidProjectionError(crs)
-
-    return crs
 
 
 def main() -> None:

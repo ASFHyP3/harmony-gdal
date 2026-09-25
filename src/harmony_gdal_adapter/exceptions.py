@@ -57,24 +57,8 @@ class UnsupportedFileFormatError(HGANoRetryException):
         super().__init__(f'Cannot process unsupported file format: "{file_format}"')
 
 
-class IncompatibleVariablesError(HGANoRetryException):
-    """Raised when the dataset variables requested are not compatible.
-
-    i.e. they have different projections, geotransforms, sizes or data types.
-
-    """
-
-    def __init__(self, message: str) -> None:
-        """Initialize a new IncompatibleVariablesError instance.
-
-        Args:
-            message (str): The message associated with the exception.
-        """
-        super().__init__(f'Incompatible variables: {message}')
-
-
 class MissingVariableError(HGANoRetryException):
-    """Raised when a requested variable is absent from the input GeoTIFF."""
+    """Raised when a requested variable is absent from the input file."""
 
     def __init__(self, variable_name: str) -> None:
         """Initialize a new MissingVariableError instance.
@@ -86,7 +70,7 @@ class MissingVariableError(HGANoRetryException):
 
 
 class InvalidProjectionError(HGANoRetryException):
-    """Raised when the requested output projection is invalid"""
+    """Raised when the requested output projection is invalid."""
 
     def __init__(self, requested_projection: str) -> None:
         """Initialize a new InvalidProjectionError instance.
@@ -98,10 +82,10 @@ class InvalidProjectionError(HGANoRetryException):
 
 
 class InputValidationError(HGANoRetryException):
-    """Raised when the KCL recipe fails"""
+    """Raised when the KCL recipe fails."""
 
     def __init__(self, error: str) -> None:
-        """Initialize a new InputValidationError
+        """Initialize a new InputValidationError.
 
         Args:
             error (str): The JSON data given by the error.

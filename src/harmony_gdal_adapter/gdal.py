@@ -1,8 +1,9 @@
 """Execute GDAL recipes."""
 
 from dataclasses import asdict
+from itertools import chain
 
-from osgeo.gdal import Translate, Warp
+from osgeo.gdal import Open, Translate, UseExceptions, Warp
 
 from harmony_gdal_adapter.build_recipes import (
     GdalOutputOptions,
@@ -10,6 +11,7 @@ from harmony_gdal_adapter.build_recipes import (
     GdalWarpRecipe,
     Recipe,
 )
+from harmony_gdal_adapter.exceptions import InvalidProjectionError, MissingVariableError
 
 
 def execute_recipe(recipe: Recipe) -> None:
@@ -21,6 +23,10 @@ def execute_recipe(recipe: Recipe) -> None:
     Returns:
         None
     """
+    UseExceptions()
+
+    _validate_recipe_input(recipe)
+
     srcDS = _build_input_string(recipe)
     destName = _build_output_string(recipe)
     if isinstance(recipe.inner, GdalTranslateRecipe):
@@ -97,3 +103,31 @@ def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
     gdal_output_options = {}
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options
+
+
+def _validate_recipe_input(recipe: Recipe) -> None:
+    _validate_dataset(recipe.inner.gdal_options.input_options.dataset_path, recipe)
+
+    match recipe.inner:
+        case GdalWarpRecipe() as warp_recipe:
+            if (target_srs := warp_recipe.warp_options.target_srs) is not None:
+                _validate_srs(target_srs)
+
+
+def _validate_dataset(requested_dataset: str, recipe: Recipe) -> None:
+    input_options = recipe.inner.gdal_options.input_options
+    truth_file = Open(f'{input_options.driver}:{input_options.virtual_filesystem or ""}{input_options.input_file_path}')
+    truth_datasets = truth_file.GetSubDatasets()
+
+    if requested_dataset not in truth_datasets:
+        raise MissingVariableError(requested_dataset)
+
+
+def _validate_srs(srs: str) -> None:
+    valid_codes = ['EPSG:4326', 'EPSG:3031', 'EPSG:3413']
+
+    for code in chain(range(32601, 32661), range(32701, 32761)):
+        valid_codes += f'EPSG:{code}'
+
+    if srs not in valid_codes:
+        raise InvalidProjectionError(srs)
