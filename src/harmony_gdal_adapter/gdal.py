@@ -3,12 +3,14 @@
 from dataclasses import asdict
 from harmony_gdal_adapter.build_recipes import (
     GdalOutputOptions,
+    GdalWarpBoundsSpatialSubset,
+    GdalWarpCutlineSpatialSubset,
     GdalTranslateRecipe,
     GdalWarpRecipe,
     Recipe,
 )
 from osgeo.gdal import Translate, Warp
-from osgeo import ogr, gdal
+from osgeo import ogr, osr, gdal
 import pystac
 
 def execute_recipe(recipe: Recipe) -> None:
@@ -103,9 +105,9 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     """
     Clip the spatial extents arguments to fit within the bounding box
     """
-    if recipe.warp_options.spatial_subset.output_bounds:
+    if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
         recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
-    if recipe.warp_options.spatial_subset.output_bounds_srs:
+    if isinstance(recipe.warp_options.spatial_subset, GdalWarpCutlineSpatialSubset):
         recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
     return recipe
 
@@ -150,17 +152,17 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
 
 
 def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
-    polygon_srs = ogr.SpatialReference()
+    polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(bounding_box_srs)
-    return osgeo.ogr.CreateGeometryFromEnvelope(*bounding_box, reference=polygon_srs)
+    return ogr.CreateGeometryFromEnvelope(*bounding_box, reference=polygon_srs)
 
 
 def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.geometry.Polygon:
-    polygon_srs = ogr.SpatialReference()
+    polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(cutline_srs)
-    return osgeo.ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
+    return ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
 
-def _get_asset_polygon(recipe: Recipe, bounds_srs: ogr.SpatialReference) -> ogr.geometry.Polygon:
+def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
     """
     Return Asset spatial extents as a polygon in the SRS of the bounding polygon
     """
