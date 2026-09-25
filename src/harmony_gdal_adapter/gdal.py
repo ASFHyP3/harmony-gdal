@@ -183,13 +183,10 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
     else:
         gdal_dataset_string = f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}"
     dataset = gdal.Open(gdal_dataset_string)
-    dataset_extents = dataset.GetExtent()
+    dataset_extents = dataset.GetExtent(srs=bounds_srs)
     pprint.pprint(dataset_extents)
     dataset_bounding_box = [dataset_extents[0], dataset_extents[2], \
     dataset_extents[1], dataset_extents[3]]
-    dataset_srs = dataset.GetSpatialRef()
-    transformer = osr.CoordinateTransformation(dataset_srs, bounds_srs)
-    dataset_bounding_box = transformer.TransformBounds(*dataset_bounding_box, 21)
     asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
     asset_polygon.AssignSpatialReference(bounds_srs)
     return asset_polygon
