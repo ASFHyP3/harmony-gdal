@@ -154,7 +154,9 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
 def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(bounding_box_srs)
-    return ogr.CreateGeometryFromEnvelope(*bounding_box, reference=polygon_srs)
+    polygon = ogr.CreateGeometryFromEnvelope(*bounding_box)
+    polygon.AssignSpatialReference(polygon_srs)
+    return polygon
 
 
 def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.geometry.Polygon:
@@ -169,10 +171,11 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
     gdal_driver = recipe.gdal_options.input_options.driver
     if recipe.gdal_options.input_options.dataset_path:
         gdal_dataset_string = \
-            f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}:\
-            {recipe.gdal_options.input_options.dataset_path}"
+            f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}:{recipe.gdal_options.input_options.dataset_path}"
     else:
         gdal_dataset_string = f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}"
     dataset = gdal.Open(gdal_dataset_string)
-    dataset_extents = dataset.GetExtent(dataset, srs=bounds_srs)
-    return osgeo.ogr.CreateGeometryFromEnvelope(*dataset_extents, reference=bounds_srs)
+    dataset_extents = dataset.GetExtent(srs=bounds_srs)
+    asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_extents)
+    asset_polygon.AssignSpatialReference(bounds_srs)
+    return asset_polygon
