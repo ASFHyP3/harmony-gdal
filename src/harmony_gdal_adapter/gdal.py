@@ -103,10 +103,10 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     """
     Clip the spatial extents arguments to fit within the bounding box
     """
-    if recipe.spatial_subset.output_bounds:
-        recipe.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
-    if recipe.spatial_subset.output_bounds_srs:
-        recipe.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
+    if recipe.warp_options.spatial_subset.output_bounds:
+        recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
+    if recipe.warp_options.spatial_subset.output_bounds_srs:
+        recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
     return recipe
 
 
@@ -115,8 +115,8 @@ def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
     Calculate the intersection of wkt spatial extent and the asset extent
     """
     subset_polygon = _create_polygon_from_wkt(
-        recipe.spatial_subset.cutline_wkt,
-        recipe.spatial_subset.cutline_srs
+        recipe.warp_options.spatial_subset.cutline_wkt,
+        recipe.warp_options.spatial_subset.cutline_srs
         )
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
     intersection_wkt = intersection_polygon.ExportToWkt()
@@ -127,8 +127,8 @@ def _calculate_bounding_box_intersection(recipe:GdalWarpRecipe) -> [float, float
     Calculate the intersection of bounding box spatial extent and the asset extent
     """
     subset_polygon = _create_polygon_from_bounding_box(
-        recipe.spatial_subset.output_bounds,
-        recipe.spatial_subset.output_bounds_srs
+        recipe.warp_options.spatial_subset.output_bounds,
+        recipe.warp_options.spatial_subset.output_bounds_srs
     )
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
     intersection_envelope = intersection_polygon.GetEnvelope()
