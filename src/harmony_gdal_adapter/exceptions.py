@@ -60,13 +60,13 @@ class UnsupportedFileFormatError(HGANoRetryException):
 class MissingVariableError(HGANoRetryException):
     """Raised when a requested variable is absent from the input file."""
 
-    def __init__(self, variable_name: str) -> None:
+    def __init__(self, requested_variable: str) -> None:
         """Initialize a new MissingVariableError instance.
 
         Args:
-            variable_name (str): The missing variable name associated with the exception.
+            requested_variable (str): The missing variable name associated with the exception.
         """
-        super().__init__(f'Missing variable in input file: {variable_name}')
+        super().__init__(f'Missing variable in input file: {requested_variable}. ')
 
 
 class InvalidProjectionError(HGANoRetryException):
