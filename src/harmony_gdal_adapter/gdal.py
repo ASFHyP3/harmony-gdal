@@ -145,7 +145,7 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
     """
     calculate the intersection of polygon spatial extent and the asset extent
     """
-    source_polygon = _get_asset_polygon(recipe, subset_polygon.reference)
+    source_polygon = _get_asset_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.Intersects(source_polygon), "Subset polygon and source polygon do not overlap"
     intersecton_polygon = subset_polygon.Intersection(source_polygon)
     return intersecton_polygon
