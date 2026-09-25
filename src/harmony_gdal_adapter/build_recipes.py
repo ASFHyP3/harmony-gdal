@@ -8,6 +8,8 @@ from typing import Literal
 from dacite import from_dict
 from kcl_lib import api as kcl
 
+from harmony_gdal_adapter.exceptions import InputValidationError
+
 
 @dataclass
 class RecipeInputOptions:
@@ -225,10 +227,14 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     ]
     args = kcl.ExecProgramArgs(
         k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
+        error_format='short',
         args=recipe_args,
     )
     api = kcl.API()
     result = api.exec_program(args)
+    if result.err_message:
+        raise InputValidationError(result.err_message)
+
     recipe_dict = json.loads(result.json_result)['recipe']
     recipe = from_dict(data_class=Recipe, data=recipe_dict)
     return recipe

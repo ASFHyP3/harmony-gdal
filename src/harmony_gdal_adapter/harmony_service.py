@@ -2,6 +2,7 @@
 
 import argparse
 import tempfile
+from itertools import chain
 from pathlib import Path
 
 import harmony_service_lib
@@ -10,6 +11,7 @@ from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, stage
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
+from harmony_gdal_adapter.exceptions import InvalidProjectionError
 from harmony_gdal_adapter.gdal import execute_recipe
 
 
@@ -51,7 +53,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 collection_shortname=str(source.process('shortName')),
                 output_type='COG',
                 variable_path=source.process('variables')[0],
-                target_srs=self.message.format.process('CRS')
+                target_srs=_validate_crs(self.message.format.process('CRS'))
                 if self.message.format and self.message.format.crs
                 else None,
                 spatial_extents_bounding_box=self.message.subset.process('bbox')
@@ -62,7 +64,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             try:
                 recipe = build_recipe(input_options)
                 execute_recipe(recipe)
-            except Exception as e:
+            except HarmonyException as e:
                 raise HarmonyException(str(e))
 
             url = stage(
@@ -86,6 +88,18 @@ def _get_asset_url(item: pystac.Item, suffix: str) -> str:
         return next(asset.href for asset in item.assets.values() if asset.href.endswith(suffix))
     except StopIteration:
         raise HarmonyException(f'No {suffix} asset found for {item.id}')
+
+
+def _validate_crs(crs: str) -> str:
+    valid_codes = ['EPSG:4326', 'EPSG:3031', 'EPSG:3413']
+
+    for code in chain(range(32601, 32661), range(32701, 32761)):
+        valid_codes += f'EPSG:{code}'
+
+    if crs not in valid_codes:
+        raise InvalidProjectionError(crs)
+
+    return crs
 
 
 def main() -> None:
