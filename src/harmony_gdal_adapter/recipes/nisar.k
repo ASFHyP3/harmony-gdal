@@ -27,7 +27,7 @@ recipe: schema.Recipe = schema.Recipe {
     if target_srs or spatial_extents_wkt or spatial_extents_bounding_box:
         inner = schema.GdalWarpRecipe {
             warp_options = schema.GdalWarpOptions {
-                dst_alpha = True
+                dst_alpha = None
                 if spatial_extents_wkt:
                     spatial_subset = schema.GdalWarpCutlineSpatialSubset {
                         cutline_wkt = spatial_extents_wkt

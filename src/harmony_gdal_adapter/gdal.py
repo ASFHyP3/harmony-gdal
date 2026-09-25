@@ -11,7 +11,7 @@ from harmony_gdal_adapter.build_recipes import (
 )
 from osgeo.gdal import Translate, Warp
 from osgeo import ogr, osr, gdal
-import pystac
+import pprint
 
 def execute_recipe(recipe: Recipe) -> None:
     """Executes a built Recipe as a GDAL operation.
@@ -38,7 +38,9 @@ def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTransl
 
 
 def _execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
+    pprint.pprint(recipe)
     recipe = _clip_spatial_extents(recipe)
+    pprint.pprint(recipe)
     warp_options = _build_gdal_warp_options(recipe)
     Warp(destName, srcDS, **warp_options)
 
@@ -106,8 +108,10 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     Clip the spatial extents arguments to fit within the bounding box
     """
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
+        print("bbox clip")
         recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpCutlineSpatialSubset):
+        print("wkt clip")
         recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
     return recipe
 
@@ -146,9 +150,11 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
     calculate the intersection of polygon spatial extent and the asset extent
     """
     source_polygon = _get_asset_polygon(recipe, subset_polygon.GetSpatialReference())
+    assert subset_polygon.IsValid(), "spatial extent polygon invalid"
+    assert source_polygon.IsValid(), "source data polygon invalid"
     assert subset_polygon.Intersects(source_polygon), "Subset polygon and source polygon do not overlap"
-    intersecton_polygon = subset_polygon.Intersection(source_polygon)
-    return intersecton_polygon
+    intersection_polygon = subset_polygon.Intersection(source_polygon)
+    return intersection_polygon
 
 
 def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
@@ -168,6 +174,8 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
     """
     Return Asset spatial extents as a polygon in the SRS of the bounding polygon
     """
+    #force longitude to x axis
+    bounds_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     gdal_driver = recipe.gdal_options.input_options.driver
     if recipe.gdal_options.input_options.dataset_path:
         gdal_dataset_string = \
@@ -175,7 +183,13 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
     else:
         gdal_dataset_string = f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}"
     dataset = gdal.Open(gdal_dataset_string)
-    dataset_extents = dataset.GetExtent(srs=bounds_srs)
-    asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_extents)
+    dataset_extents = dataset.GetExtent()
+    pprint.pprint(dataset_extents)
+    dataset_bounding_box = [dataset_extents[0], dataset_extents[2], \
+    dataset_extents[1], dataset_extents[3]]
+    dataset_srs = dataset.GetSpatialRef()
+    transformer = osr.CoordinateTransformation(dataset_srs, bounds_srs)
+    dataset_bounding_box = transformer.TransformBounds(*dataset_bounding_box, 21)
+    asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
     asset_polygon.AssignSpatialReference(bounds_srs)
     return asset_polygon
