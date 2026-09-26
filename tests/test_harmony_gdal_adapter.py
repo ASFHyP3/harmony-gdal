@@ -1,5 +1,4 @@
 import filecmp
-from functools import partial
 
 from harmony_gdal_adapter.build_recipes import GdalTranslateRecipe, GdalWarpRecipe, RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.gdal import execute_recipe
