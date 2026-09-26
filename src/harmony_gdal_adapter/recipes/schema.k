@@ -102,8 +102,11 @@ schema GdalWarpBoundsSpatialSubset:
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
-    output_bounds: (float, float, float, float)
+    output_bounds: [float]
     output_bounds_srs: str = "WGS84"
+
+    check:
+        len(output_bounds) == 4, "Invalid bounding box: contains more or less than 4 values"
 
 schema GdalWarpCutlineSpatialSubset:
     """GdalWarpCutlineSpatialSubset allows performing spatial subsetting with a WKT string utilizing GDAL Warp's cutline options.
