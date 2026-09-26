@@ -3,13 +3,12 @@ requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nisar_py"
+name = "harmony_gdal_adapter"
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
 authors = [
     {name="ASF Tools Team", email="UAF-asf-apd@alaska.edu"},
 ]
-description = "NISAR data transformations."
+description = "Harmony GDAL Adapter"
 license = {text = "BSD-3-Clause"}
 classifiers=[
     "Intended Audience :: Science/Research",
@@ -22,8 +21,14 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-# FIXME: isce3 is not pip-installable, so dependencies may not serve a purpose here
-# dependencies = []
+dependencies = [
+    "gdal",
+    "pystac",
+    "kcl-lib",
+    "dacite",
+    "harmony-service-lib",
+    "argparse-dataclass"
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -33,10 +38,16 @@ develop = [
     "pytest",
     "pytest-console-scripts",
     "pytest-cov",
+    "numpy",
+    "xarray",
+    "h5netcdf"
 ]
 
+[project.scripts]
+hga = "harmony_gdal_adapter.__main__:run_cli"
+
 [project.urls]
-Homepage = "https://github.com/ASFHyP3/nisar-py"
+Homepage = "https://github.com/nasa/harmony-gdal-adapter"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -66,7 +77,7 @@ quote-style = "single"
 extend-select = [
     "I",   # isort: https://docs.astral.sh/ruff/rules/#isort-i
     "UP",  # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
-    "D",   # pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    "D",
     "ANN", # annotations: https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
     "PTH", # use-pathlib-pth: https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
 ]
@@ -86,7 +97,7 @@ suppress-dummy-args = true
 
 # Please keep the following mypy options up-to-date with https://github.com/ASFHyP3/actions/#reusable-mypyyml
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
@@ -95,4 +106,5 @@ check_untyped_defs = true
 install_types = true
 non_interactive = true
 pretty = true
+exclude_gitignore = true
 disable_error_code = ["import-untyped"]
