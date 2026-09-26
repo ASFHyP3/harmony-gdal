@@ -2,12 +2,15 @@
 
 from dataclasses import asdict
 from itertools import chain
+from typing import NotRequired, TypedDict, cast
 
 from osgeo.gdal import Open, OpenEx, Translate, UseExceptions, Warp
 
 from harmony_gdal_adapter.build_recipes import (
     GdalOutputOptions,
     GdalTranslateRecipe,
+    GdalWarpBoundsSpatialSubset,
+    GdalWarpCutlineSpatialSubset,
     GdalWarpRecipe,
     Recipe,
 )
@@ -62,7 +65,27 @@ def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
     return translate_options
 
 
-def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
+class WarpOptions(TypedDict, total=False):
+    format: str | None
+    dstSRS: str | None
+    srcSRS: str | None
+    srcAlpha: bool | None
+    dstAlpha: bool | None
+    multithread: bool | None
+    copyMetadata: bool | None
+    outputBounds: list[float] | None
+    outputBoundsSRS: str | None
+    cutlineWKT: str | None
+    cutlineSRS: str | None
+    cutlineWhere: str | None
+    cutlineSQL: str | None
+    cutlineBlend: int | None
+    cropToCutline: bool | None
+
+
+def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> WarpOptions:
+    input_warp_options = recipe.warp_options
+
     warp_options = _build_gdal_output_options(recipe.gdal_options.output_options)
 
     flattened_recipe_dictionary = {}
@@ -74,33 +97,36 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
         else:
             flattened_recipe_dictionary[key] = value
 
-    recipe_gdal_mapping = {
-        'target_srs': 'dstSRS',
-        'source_srs': 'srcSRS',
-        'src_alpha': 'srcAlpha',
-        'dst_alpha': 'dstAlpha',
-        'multithreaded': 'multithread',
-        'copy_metadata': 'copyMetadata',
-        'spatial_subset.output_bounds': 'outputBounds',
-        'spatial_subset.output_bounds_srs': 'outputBoundsSRS',
-        'spatial_subset.cutline_wkt': 'cutlineWKT',
-        'spatial_subset.cutline_srs': 'cutlineSRS',
-        'spatial_subset.cutline_layer': 'cutlineLayer',
-        'spatial_subset.cutline_where': 'cutlineWhere',
-        'spatial_subset.cutline_sql': 'cutlineSQL',
-        'spatial_subset.cutline_blend': 'cutlineBlend',
-        'spatial_subset.crop_to_cutline': 'cropToCutline',
-    }
+    warp_options |= WarpOptions(
+        dstSRS=input_warp_options.target_srs,
+        srcSRS=input_warp_options.source_srs,
+        srcAlpha=input_warp_options.src_alpha,
+        dstAlpha=input_warp_options.dst_alpha,
+        multithread=input_warp_options.multithreaded,
+        copyMetadata=input_warp_options.copy_metadata,
+    )
 
-    for maps_from, maps_to in recipe_gdal_mapping.items():
-        if maps_from in flattened_recipe_dictionary:
-            warp_options[maps_to] = flattened_recipe_dictionary[maps_from]
+    if spatial_subset := input_warp_options.spatial_subset:
+        match spatial_subset:
+            case GdalWarpBoundsSpatialSubset() as bounds:
+                warp_options |= WarpOptions(outputBounds=bounds.output_bounds, outputBoundsSRS=bounds.output_bounds_srs)
+            case GdalWarpCutlineSpatialSubset() as cutline:
+                warp_options |= WarpOptions(
+                    cutlineWKT=cutline.cutline_wkt,
+                    cutlineSRS=cutline.cutline_srs,
+                    cutlineWhere=cutline.cutline_where,
+                    cutlineSQL=cutline.cutline_sql,
+                    cutlineBlend=cutline.cutline_blend,
+                    cropToCutline=cutline.crop_to_cutline,
+                )
+
+    warp_options = cast(WarpOptions, {k: v for k, v in warp_options.items() if v is not None})
 
     return warp_options
 
 
-def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
-    gdal_output_options = {}
+def _build_gdal_output_options(output_options: GdalOutputOptions) -> WarpOptions:
+    gdal_output_options: WarpOptions = {}
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options
 
