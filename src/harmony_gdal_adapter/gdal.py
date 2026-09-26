@@ -3,7 +3,7 @@
 from dataclasses import asdict
 from itertools import chain
 
-from osgeo.gdal import Open, OpenEx, Translate, UseExceptions, Warp
+from osgeo.gdal import OpenEx, Translate, UseExceptions, Warp
 
 from harmony_gdal_adapter.build_recipes import (
     GdalOutputOptions,
