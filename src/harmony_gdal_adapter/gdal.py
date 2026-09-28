@@ -1,6 +1,7 @@
 """Execute GDAL recipes."""
 
 from dataclasses import asdict
+from itertools import chain
 from typing import TypedDict, cast
 
 from osgeo.gdal import Translate, Warp
@@ -104,7 +105,7 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
         match spatial_subset:
             case GdalWarpBoundsSpatialSubset() as bounds:
                 warp_options |= _WarpOptions(
-                    outputBounds=list(bounds.output_bounds), outputBoundsSRS=bounds.output_bounds_srs
+                    outputBounds=bounds.output_bounds, outputBoundsSRS=bounds.output_bounds_srs
                 )
             case GdalWarpCutlineSpatialSubset() as cutline:
                 warp_options |= _WarpOptions(
