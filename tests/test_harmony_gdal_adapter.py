@@ -8,7 +8,6 @@ def make_recipe_input_options(**kwargs) -> RecipeInputOptions:
     defaults = RecipeInputOptions(
         collection_shortname='foobar',
         output_type='GTiff',
-        output_filename='data/output.tif',
         variable_path='//science/LSAR/GCOV/grids/frequencyA/HHHH',
         **kwargs,
     )
