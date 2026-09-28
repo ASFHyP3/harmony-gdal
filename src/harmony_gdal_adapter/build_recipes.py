@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass, field
 from importlib.resources import files
 from typing import Literal
 
-from dacite import from_dict
+import dacite
 from kcl_lib import api as kcl
 
 from harmony_gdal_adapter.exceptions import InputValidationError
@@ -236,5 +236,5 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
         raise InputValidationError(result.err_message)
 
     recipe_dict = json.loads(result.json_result)['recipe']
-    recipe = from_dict(data_class=Recipe, data=recipe_dict)
+    recipe = dacite.from_dict(data_class=Recipe, data=recipe_dict, config=dacite.Config(strict=True))
     return recipe
