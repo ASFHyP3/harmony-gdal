@@ -14,6 +14,7 @@ from harmony_gdal_adapter.build_recipes import (
     Recipe,
 )
 
+from typing import List
 
 def execute_recipe(recipe: Recipe) -> None:
     """Executes a built Recipe as a GDAL operation.
@@ -128,7 +129,7 @@ def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
     return intersection_wkt
 
 
-def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> [float, float, float, float]:
+def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> List[float]:
     """Calculate the intersection of bounding box spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_bounding_box(
         recipe.warp_options.spatial_subset.output_bounds, recipe.warp_options.spatial_subset.output_bounds_srs
@@ -156,7 +157,7 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
 
 
 def _create_polygon_from_bounding_box(
-    bounding_box: [float, float, float, float], bounding_box_srs: str | None
+    bounding_box: List[float], bounding_box_srs: str | None
 ) -> ogr.geometry.Polygon:
     """Create polygon object from bounding box."""
     polygon_srs = osr.SpatialReference()
