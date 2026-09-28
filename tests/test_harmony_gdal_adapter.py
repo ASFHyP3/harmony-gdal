@@ -1,8 +1,10 @@
 import filecmp
 
+import pytest
+
 from harmony_gdal_adapter.build_recipes import GdalTranslateRecipe, GdalWarpRecipe, RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.gdal import execute_recipe
-import pytest
+
 
 def make_options(**overrides) -> RecipeInputOptions:
     defaults = {

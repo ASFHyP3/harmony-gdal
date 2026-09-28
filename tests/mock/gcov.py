@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from osgeo import osr
 from xarray import DataArray, DataTree, Dataset, Variable
 
@@ -43,15 +45,13 @@ def _projection_variable(epsg: int) -> DataArray:
     return DataArray(epsg, attrs=attrs)
 
 
-def mock_gcov_granule(tmp_path: Path | str, granule_file:str = 'mock_gcov_granule.h5', x0: int | float = 0, y0: int | float = 0, epsg: int = DEFAULT_EPSG, step_size: float | int = STEP_SIZE, value_scale: float | int = VALUE_SCALE, num_cols: int = NCOLS, num_rows: int = NROWS) -> Path:
+def mock_gcov_granule(tmp_path: Path, granule_file:str = 'mock_gcov_granule.h5', x0: float = 0, y0: float = 0, epsg: int = DEFAULT_EPSG, step_size: float = STEP_SIZE, value_scale: float = VALUE_SCALE, num_cols: int = NCOLS, num_rows: int = NROWS) -> Path:
     """Creates a mock gcov .h5 granule with sufficient data to be tested by harmony-gdal tool.
 
     frequencyA contains a 100x50 HHHH raster with pixel values = column index * value_scale
-
     frequencyB contains a 100x50 VVVV raster with pixel values = column index * value_scale,
     and a VHVH raster with pixel values = row index * value_scale (see value_scale below).
     """
-
     x_coordinates = [x0 + ii * step_size for ii in range(0, num_cols, 1)]
     y_coordinates = [y0 + ii * step_size for ii in range(num_rows, 0, -1)]
     x_values = [ii * value_scale for ii in range(0, num_cols, 1)]

@@ -62,7 +62,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             try:
                 recipe = build_recipe(input_options)
                 execute_recipe(recipe)
-            except Exception as e:
+            except Exception as e: # noqa: BLE001
                 raise HarmonyException(str(e))
 
             url = stage(

@@ -1,17 +1,19 @@
 """Execute GDAL recipes."""
 
 from dataclasses import asdict
+
+from osgeo import gdal, ogr, osr
+from osgeo.gdal import Translate, Warp
+
 from harmony_gdal_adapter.build_recipes import (
     GdalOutputOptions,
+    GdalTranslateRecipe,
     GdalWarpBoundsSpatialSubset,
     GdalWarpCutlineSpatialSubset,
-    GdalTranslateRecipe,
     GdalWarpRecipe,
     Recipe,
 )
-from osgeo.gdal import Translate, Warp
-from osgeo import ogr, osr, gdal
-import pprint
+
 
 def execute_recipe(recipe: Recipe) -> None:
     """Executes a built Recipe as a GDAL operation.
@@ -33,34 +35,38 @@ def execute_recipe(recipe: Recipe) -> None:
 
 
 def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTranslateRecipe) -> None:
+    """Execute gdal translate operation from recipe."""
     translate_options = _build_gdal_translate_options(recipe)
     Translate(destName, srcDS, **translate_options)
 
 
 def _execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
-    pprint.pprint(recipe)
+    """Execute gdal warp operation from recipe."""
     recipe = _clip_spatial_extents(recipe)
-    pprint.pprint(recipe)
     warp_options = _build_gdal_warp_options(recipe)
     Warp(destName, srcDS, **warp_options)
 
 
 def _build_input_string(recipe: Recipe) -> str:
+    """Return input string file from recipe."""
     input_options = recipe.inner.gdal_options.input_options
     return f'{input_options.driver}:{input_options.virtual_filesystem or ""}{input_options.input_file_path}:{input_options.dataset_path}'
 
 
 def _build_output_string(recipe: Recipe) -> str:
+    """Return output file path from recipe."""
     output_options = recipe.inner.gdal_options.output_options
     return str(output_options.output_file_path)
 
 
 def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
+    """Build gdalOptions dictionary from recipe."""
     translate_options = _build_gdal_output_options(recipe.gdal_options.output_options)
     return translate_options
 
 
 def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
+    """Build gdalWarpOptions dictionary from recipe."""
     warp_options = _build_gdal_output_options(recipe.gdal_options.output_options)
 
     flattened_recipe_dictionary = {}
@@ -98,15 +104,14 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
 
 
 def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
+    """Build gdalOptions dictionary."""
     gdal_output_options = {}
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options
 
 
 def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
-    """
-    Clip the spatial extents arguments to fit within the bounding box
-    """
+    """Clip the spatial extents arguments to fit within the bounding box."""
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
         recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpCutlineSpatialSubset):
@@ -115,9 +120,7 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
 
 
 def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
-    """
-    Calculate the intersection of wkt spatial extent and the asset extent
-    """
+    """Calculate the intersection of wkt spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_wkt(
         recipe.warp_options.spatial_subset.cutline_wkt,
         recipe.warp_options.spatial_subset.cutline_srs
@@ -127,9 +130,7 @@ def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
     return intersection_wkt
 
 def _calculate_bounding_box_intersection(recipe:GdalWarpRecipe) -> [float, float, float, float]:
-    """
-    Calculate the intersection of bounding box spatial extent and the asset extent
-    """
+    """Calculate the intersection of bounding box spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_bounding_box(
         recipe.warp_options.spatial_subset.output_bounds,
         recipe.warp_options.spatial_subset.output_bounds_srs
@@ -144,9 +145,7 @@ def _calculate_bounding_box_intersection(recipe:GdalWarpRecipe) -> [float, float
 
 
 def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWarpRecipe) -> ogr.Geometry:
-    """
-    calculate the intersection of polygon spatial extent and the asset extent
-    """
+    """Calculate the intersection of subset polygon spatial extent and granule polygon extent."""
     source_polygon = _get_asset_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.IsValid(), "spatial extent polygon invalid"
     assert source_polygon.IsValid(), "source data polygon invalid"
@@ -156,6 +155,7 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
 
 
 def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
+    """Create polygon object from bounding box."""
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(bounding_box_srs)
     polygon = ogr.CreateGeometryFromEnvelope(*bounding_box)
@@ -164,14 +164,13 @@ def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float],
 
 
 def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.geometry.Polygon:
+    """Create polygon object from wkt string."""
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(cutline_srs)
     return ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
 
 def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
-    """
-    Return Asset spatial extents as a polygon in the SRS of the bounding polygon
-    """
+    """Return asset spatial extents as a polygon in the SRS of the bounding polygon."""
     #force longitude to x axis
     bounds_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     gdal_driver = recipe.gdal_options.input_options.driver
@@ -182,7 +181,6 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
         gdal_dataset_string = f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}"
     dataset = gdal.Open(gdal_dataset_string)
     dataset_extents = dataset.GetExtent(srs=bounds_srs)
-    pprint.pprint(dataset_extents)
     dataset_bounding_box = [dataset_extents[0], dataset_extents[2], \
     dataset_extents[1], dataset_extents[3]]
     asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
