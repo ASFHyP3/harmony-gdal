@@ -60,7 +60,7 @@ def test_spatial_subset_bounding_box(data_dir, gcov_granule):
     overrides = {
         'output_filename': str(output),
         'input_filename': str(gcov_granule),
-        'spatial_extents_bounding_box': [-151.470826, 0.036081, -151.417068, 0.009020]
+        'spatial_extents_bounding_box': [-151.470826, 0.036081, -151.417068, 0.009020],
     }
     options = make_options(**overrides)
     recipe = build_recipe(options)
@@ -74,7 +74,7 @@ def test_spatial_subset_bounding_box_clipped(data_dir, gcov_granule):
     overrides = {
         'output_filename': str(output),
         'input_filename': str(gcov_granule),
-        'spatial_extents_bounding_box': [-152.470826, -.976081, -151.417068, 0.036081]
+        'spatial_extents_bounding_box': [-152.470826, -0.976081, -151.417068, 0.036081],
     }
     options = make_options(**overrides)
     recipe = build_recipe(options)
@@ -82,17 +82,18 @@ def test_spatial_subset_bounding_box_clipped(data_dir, gcov_granule):
     execute_recipe(recipe)
     assert filecmp.cmp(output, data_dir / 'spatial_subset_bounding_box_clipped_example.tif')
 
+
 def test_spatial_subset_out_of_bounds(data_dir, gcov_granule):
     output = data_dir / 'output_spatial_subset_bounding_box_clipped.tif'
     overrides = {
         'output_filename': str(output),
         'input_filename': str(gcov_granule),
-        'spatial_extents_bounding_box': [1.0, 1.0, 1.1,1.1]
+        'spatial_extents_bounding_box': [1.0, 1.0, 1.1, 1.1],
     }
     options = make_options(**overrides)
     recipe = build_recipe(options)
     assert isinstance(recipe.inner, GdalWarpRecipe)
-    with pytest.raises(AssertionError, match = "Subset polygon and source polygon do not overlap"):
+    with pytest.raises(AssertionError, match='Subset polygon and source polygon do not overlap'):
         execute_recipe(recipe)
 
 

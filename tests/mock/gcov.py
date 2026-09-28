@@ -45,7 +45,17 @@ def _projection_variable(epsg: int) -> DataArray:
     return DataArray(epsg, attrs=attrs)
 
 
-def mock_gcov_granule(tmp_path: Path, granule_file:str = 'mock_gcov_granule.h5', x0: float = 0, y0: float = 0, epsg: int = DEFAULT_EPSG, step_size: float = STEP_SIZE, value_scale: float = VALUE_SCALE, num_cols: int = NCOLS, num_rows: int = NROWS) -> Path:
+def mock_gcov_granule(
+    tmp_path: Path,
+    granule_file: str = 'mock_gcov_granule.h5',
+    x0: float = 0,
+    y0: float = 0,
+    epsg: int = DEFAULT_EPSG,
+    step_size: float = STEP_SIZE,
+    value_scale: float = VALUE_SCALE,
+    num_cols: int = NCOLS,
+    num_rows: int = NROWS,
+) -> Path:
     """Creates a mock gcov .h5 granule with sufficient data to be tested by harmony-gdal tool.
 
     frequencyA contains a 100x50 HHHH raster with pixel values = column index * value_scale
@@ -74,8 +84,12 @@ def mock_gcov_granule(tmp_path: Path, granule_file:str = 'mock_gcov_granule.h5',
                         data=[[0.0 if x == y else 1.0 for x in x_coordinates] for y in y_coordinates],
                         attrs={'grid_mapping': 'projection'},
                     ).astype('float32'),
-                    'xCoordinates': _coordinate_variable('xCoordinates', x_coordinates, is_x=True, units = srs.GetAttrValue('UNIT',0)),
-                    'yCoordinates': _coordinate_variable('yCoordinates', y_coordinates, is_x=False, units = srs.GetAttrValue('UNIT',0)),
+                    'xCoordinates': _coordinate_variable(
+                        'xCoordinates', x_coordinates, is_x=True, units=srs.GetAttrValue('UNIT', 0)
+                    ),
+                    'yCoordinates': _coordinate_variable(
+                        'yCoordinates', y_coordinates, is_x=False, units=srs.GetAttrValue('UNIT', 0)
+                    ),
                     'xCoordinateSpacing': step_size,
                     'yCoordinateSpacing': -step_size,
                     'listOfPolarizations': (
@@ -102,8 +116,12 @@ def mock_gcov_granule(tmp_path: Path, granule_file:str = 'mock_gcov_granule.h5',
                         data=[[255.0 if x == y else 2.0 for x in x_coordinates] for y in y_coordinates],
                         attrs={'grid_mapping': 'projection'},
                     ).astype('float32'),
-                    'xCoordinates': _coordinate_variable('xCoordinates', x_coordinates, is_x=True, units = srs.GetAttrValue('UNIT',0)),
-                    'yCoordinates': _coordinate_variable('yCoordinates', y_coordinates, is_x=False, units = srs.GetAttrValue('UNIT',0)),
+                    'xCoordinates': _coordinate_variable(
+                        'xCoordinates', x_coordinates, is_x=True, units=srs.GetAttrValue('UNIT', 0)
+                    ),
+                    'yCoordinates': _coordinate_variable(
+                        'yCoordinates', y_coordinates, is_x=False, units=srs.GetAttrValue('UNIT', 0)
+                    ),
                     'xCoordinateSpacing': step_size,
                     'yCoordinateSpacing': -step_size,
                     'listOfPolarizations': (

@@ -99,7 +99,6 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> dict:
         if maps_from in flattened_recipe_dictionary:
             warp_options[maps_to] = flattened_recipe_dictionary[maps_from]
 
-
     return warp_options
 
 
@@ -122,39 +121,43 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
 def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
     """Calculate the intersection of wkt spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_wkt(
-        recipe.warp_options.spatial_subset.cutline_wkt,
-        recipe.warp_options.spatial_subset.cutline_srs
-        )
+        recipe.warp_options.spatial_subset.cutline_wkt, recipe.warp_options.spatial_subset.cutline_srs
+    )
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
     intersection_wkt = intersection_polygon.ExportToWkt()
     return intersection_wkt
 
-def _calculate_bounding_box_intersection(recipe:GdalWarpRecipe) -> [float, float, float, float]:
+
+def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> [float, float, float, float]:
     """Calculate the intersection of bounding box spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_bounding_box(
-        recipe.warp_options.spatial_subset.output_bounds,
-        recipe.warp_options.spatial_subset.output_bounds_srs
+        recipe.warp_options.spatial_subset.output_bounds, recipe.warp_options.spatial_subset.output_bounds_srs
     )
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
     intersection_envelope = intersection_polygon.GetEnvelope()
     # envelope is in format [minx, maxx, miny, maxy], must be rearranged to [minx, min, maxx, maxy]
-    intersection_bounding_box = \
-    [intersection_envelope[0], intersection_envelope[2], \
-     intersection_envelope[1], intersection_envelope[3]]
+    intersection_bounding_box = [
+        intersection_envelope[0],
+        intersection_envelope[2],
+        intersection_envelope[1],
+        intersection_envelope[3],
+    ]
     return intersection_bounding_box
 
 
 def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWarpRecipe) -> ogr.Geometry:
     """Calculate the intersection of subset polygon spatial extent and granule polygon extent."""
     source_polygon = _get_asset_polygon(recipe, subset_polygon.GetSpatialReference())
-    assert subset_polygon.IsValid(), "spatial extent polygon invalid"
-    assert source_polygon.IsValid(), "source data polygon invalid"
-    assert subset_polygon.Intersects(source_polygon), "Subset polygon and source polygon do not overlap"
+    assert subset_polygon.IsValid(), 'spatial extent polygon invalid'
+    assert source_polygon.IsValid(), 'source data polygon invalid'
+    assert subset_polygon.Intersects(source_polygon), 'Subset polygon and source polygon do not overlap'
     intersection_polygon = subset_polygon.Intersection(source_polygon)
     return intersection_polygon
 
 
-def _create_polygon_from_bounding_box(bounding_box: [float,float, float, float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
+def _create_polygon_from_bounding_box(
+    bounding_box: [float, float, float, float], bounding_box_srs: str | None
+) -> ogr.geometry.Polygon:
     """Create polygon object from bounding box."""
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(bounding_box_srs)
@@ -169,20 +172,19 @@ def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.g
     polygon_srs.SetFromUserInput(cutline_srs)
     return ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
 
+
 def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
     """Return asset spatial extents as a polygon in the SRS of the bounding polygon."""
-    #force longitude to x axis
+    # force longitude to x axis
     bounds_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     gdal_driver = recipe.gdal_options.input_options.driver
     if recipe.gdal_options.input_options.dataset_path:
-        gdal_dataset_string = \
-            f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}:{recipe.gdal_options.input_options.dataset_path}"
+        gdal_dataset_string = f'{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}:{recipe.gdal_options.input_options.dataset_path}'
     else:
-        gdal_dataset_string = f"{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}"
+        gdal_dataset_string = f'{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}'
     dataset = gdal.Open(gdal_dataset_string)
     dataset_extents = dataset.GetExtent(srs=bounds_srs)
-    dataset_bounding_box = [dataset_extents[0], dataset_extents[2], \
-    dataset_extents[1], dataset_extents[3]]
+    dataset_bounding_box = [dataset_extents[0], dataset_extents[2], dataset_extents[1], dataset_extents[3]]
     asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
     asset_polygon.AssignSpatialReference(bounds_srs)
     return asset_polygon
