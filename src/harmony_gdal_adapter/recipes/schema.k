@@ -82,7 +82,7 @@ schema GdalWarpOptions:
         Whether to copy the source metadata.
         Maps directly to GDAL's copyMetadata option in osgeo.gdal.WarpOptions.
     """
-    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
+    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | ClipExtentsToGranuleExtents
     target_srs?: str
     source_srs?: str
     src_alpha?: bool
@@ -130,7 +130,7 @@ schema GdalWarpCutlineSpatialSubset:
         Maps directly to GDAL's cutlineBlend option in osgeo.gdal.WarpOptions.
     crop_to_cutline : bool, default is True
         Wether to use the cutline extent for output bounds.
-        Maps directly to GDALts cropToCutline option isn osgeo.gdal.WarpOptions.
+        Maps directly to GDALs cropToCutline option isn osgeo.gdal.WarpOptions.
     """
     cutline_wkt: str
     cutline_where?: str
@@ -138,4 +138,17 @@ schema GdalWarpCutlineSpatialSubset:
     cutline_blend?: int
     cutline_srs: str = "WGS84"
     crop_to_cutline: bool = True
+
+schema ClipExtentsToGranuleExtents:
+    spatial_extents: GdalWarpCutlineSpatialSubset | BoundingBoxToCutline
+    granule_extents: GranuleExtents | GdalWarpBoundsSpatialSubset
+
+schema BoundingBoxToCutline:
+    bounding_box: GdalWarpBoundsSpatialSubset
+
+schema GranuleExtents:
+    gdal_input_options: GdalInputOptions | InheritFromRecipe = InheritFromRecipe {}
+
+schema InheritFromRecipe:
+    """"""
 

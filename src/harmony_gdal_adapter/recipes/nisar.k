@@ -23,22 +23,30 @@ _gdal_options = schema.GdalOptions {
     }
 }
 
+_spatial_subset_operation = schema.ClipExtentsToGranuleExtents {
+    granule_extents = schema.GranuleExtents {}
+    if spatial_extents_wkt:
+        spatial_extents = schema.GdalWarpCutlineSpatialSubset {
+            cutline_wkt = spatial_extents_wkt
+            cutline_srs = "EPSG:4326"
+            crop_to_cutline = True
+        }
+    elif spatial_extents_bounding_box:
+        spatial_extents = schema.BoundingBoxToCutline {
+            bounding_box = schema.GdalWarpBoundsSpatialSubset {
+                output_bounds = spatial_extents_bounding_box
+                output_bounds_srs = "EPSG:4326"
+            }
+        }
+}
+
 recipe: schema.Recipe = schema.Recipe {
     if target_srs or spatial_extents_wkt or spatial_extents_bounding_box:
         inner = schema.GdalWarpRecipe {
             warp_options = schema.GdalWarpOptions {
                 dst_alpha = None
-                if spatial_extents_wkt:
-                    spatial_subset = schema.GdalWarpCutlineSpatialSubset {
-                        cutline_wkt = spatial_extents_wkt
-                        cutline_srs = "EPSG:4326"
-                        crop_to_cutline = True
-                    }
-                elif spatial_extents_bounding_box:
-                    spatial_subset = schema.GdalWarpBoundsSpatialSubset {
-                        output_bounds = spatial_extents_bounding_box
-                        output_bounds_srs = "EPSG:4326"
-                    }
+                if spatial_extents_wkt or spatial_extents_bounding_box:
+                    spatial_subset = _spatial_subset_operation
                 if target_srs:
                     target_srs = target_srs
             }
