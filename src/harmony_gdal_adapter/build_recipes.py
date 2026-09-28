@@ -1,14 +1,12 @@
 """Build a GDAL Recipe and the GDAL Recipe related types."""
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from importlib.resources import files
 from typing import Literal
 
 import dacite
 from kcl_lib import api as kcl
-
-from harmony_gdal_adapter.exceptions import InputValidationError
 
 
 @dataclass
@@ -20,9 +18,8 @@ class RecipeInputOptions:
     output_type: str
     output_filename: str
     variable_path: str
-    spatial_extents_bounding_box: list[float] | None = field(metadata={'type': float, 'nargs': 4}, default=None)
     target_srs: str | None = None
-    spatial_extents_wkt: str | None = None
+    spatial_extents: str | None = None
 
 
 @dataclass
@@ -96,7 +93,7 @@ class GdalWarpBoundsSpatialSubset:
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
 
-    output_bounds: list[float]
+    output_bounds: tuple[float, float, float, float]
     output_bounds_srs: str | None = None
 
 
@@ -222,19 +219,13 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     Returns:
         Recipe: The built recipe from the input options
     """
-    recipe_args = [
-        kcl.Argument(name=name, value=str(value)) for name, value in asdict(options).items() if value is not None
-    ]
+    recipe_args = [kcl.Argument(name=name, value=value) for name, value in asdict(options).items()]
     args = kcl.ExecProgramArgs(
         k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
-        error_format='short',
         args=recipe_args,
     )
     api = kcl.API()
     result = api.exec_program(args)
-    if result.err_message:
-        raise InputValidationError(result.err_message)
-
     recipe_dict = json.loads(result.json_result)['recipe']
     recipe = dacite.from_dict(data_class=Recipe, data=recipe_dict, config=dacite.Config(strict=True))
     return recipe
