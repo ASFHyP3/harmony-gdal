@@ -108,10 +108,8 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     Clip the spatial extents arguments to fit within the bounding box
     """
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
-        print("bbox clip")
         recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpCutlineSpatialSubset):
-        print("wkt clip")
         recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
     return recipe
 
