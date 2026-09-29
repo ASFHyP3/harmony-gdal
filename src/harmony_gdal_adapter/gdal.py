@@ -1,6 +1,5 @@
 """Execute GDAL recipes."""
 
-from dataclasses import asdict
 from itertools import chain
 from typing import TypedDict, cast
 
@@ -48,24 +47,23 @@ def execute_recipe(recipe: Recipe) -> None:
 
     _validate_recipe_input(recipe)
 
-    srcDS = _build_input_string(recipe)
-    destName = _build_output_string(recipe)
-    if isinstance(recipe.inner, GdalTranslateRecipe):
-        _execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
-    elif isinstance(recipe.inner, GdalWarpRecipe):
-        _execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
-    else:
-        raise TypeError('recipe must be GdalTranslateRecipe or GdalWarpRecipe')
+    source_dataset = _build_input_string(recipe)
+    destination_name = _build_output_string(recipe)
+    match recipe.inner:
+        case GdalTranslateRecipe() as translate_recipe:
+            _execute_gdal_translate_recipe(source_dataset, destination_name, translate_recipe)
+        case GdalWarpRecipe() as warp_recipe:
+            _execute_gdal_warp_recipe(source_dataset, destination_name, warp_recipe)
 
 
-def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTranslateRecipe) -> None:
+def _execute_gdal_translate_recipe(source_dataset: str, destination_name: str, recipe: GdalTranslateRecipe) -> None:
     translate_options = _build_gdal_translate_options(recipe)
-    Translate(destName, srcDS, **translate_options)
+    Translate(destination_name, source_dataset, **translate_options)
 
 
-def _execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
+def _execute_gdal_warp_recipe(source_dataset: str, destination_name: str, recipe: GdalWarpRecipe) -> None:
     warp_options = _build_gdal_warp_options(recipe)
-    Warp(destName, srcDS, **warp_options)
+    Warp(destination_name, source_dataset, **warp_options)
 
 
 def _build_input_string(recipe: Recipe) -> str:
@@ -87,15 +85,6 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
     input_warp_options = recipe.warp_options
 
     warp_options = _build_gdal_output_options(recipe.gdal_options.output_options)
-
-    flattened_recipe_dictionary = {}
-
-    for key, value in asdict(recipe.warp_options).items():
-        if isinstance(value, dict):
-            for inner_key, inner_value in value.items():
-                flattened_recipe_dictionary[f'{key}.{inner_key}'] = inner_value
-        else:
-            flattened_recipe_dictionary[key] = value
 
     warp_options |= _WarpOptions(
         dstSRS=input_warp_options.target_srs,
