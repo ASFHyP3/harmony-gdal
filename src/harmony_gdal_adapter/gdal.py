@@ -13,7 +13,7 @@ from harmony_gdal_adapter.build_recipes import (
     GdalWarpRecipe,
     Recipe,
 )
-from pprint import pprint
+
 
 def execute_recipe(recipe: Recipe) -> None:
     """Executes a built Recipe as a GDAL operation.
@@ -26,7 +26,6 @@ def execute_recipe(recipe: Recipe) -> None:
     """
     srcDS = _build_input_string(recipe)
     destName = _build_output_string(recipe)
-    pprint(recipe.inner)
     if isinstance(recipe.inner, GdalTranslateRecipe):
         _execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
     elif isinstance(recipe.inner, GdalWarpRecipe):
