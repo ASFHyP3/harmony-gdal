@@ -57,8 +57,8 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 output_filename=str(output_path),
                 collection_shortname=str(source.process('shortName')),
                 output_type='COG',
-                variable_path=source.process('variables')[0],
-                target_srs=self.message.format.process('crs').fullPath
+                variable_path=source.process('variables')[0].fullPath,
+                target_srs=self.message.format.process('crs')
                 if self.message.format and self.message.format.crs
                 else None,
                 spatial_extents_bounding_box=self.message.subset.process('bbox')
