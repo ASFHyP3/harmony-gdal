@@ -7,7 +7,7 @@ from typing import Literal
 
 from dacite import from_dict
 from kcl_lib import api as kcl
-
+from pprint import pprint
 
 @dataclass
 class RecipeInputOptions:
@@ -229,6 +229,7 @@ def build_recipe(options: RecipeInputOptions) -> Recipe:
     )
     api = kcl.API()
     result = api.exec_program(args)
+    pprint(result)
     recipe_dict = json.loads(result.json_result)['recipe']
     recipe = from_dict(data_class=Recipe, data=recipe_dict)
     return recipe
