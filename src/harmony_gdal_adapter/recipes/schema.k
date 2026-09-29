@@ -82,7 +82,7 @@ schema GdalWarpOptions:
         Whether to copy the source metadata.
         Maps directly to GDAL's copyMetadata option in osgeo.gdal.WarpOptions.
     """
-    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset | ClipExtentsToGranuleExtents
+    spatial_subset?: GdalWarpBoundsSpatialSubset | GdalWarpCutlineSpatialSubset
     target_srs?: str
     source_srs?: str
     src_alpha?: bool
@@ -98,12 +98,12 @@ schema GdalWarpBoundsSpatialSubset:
     output_bounds : (float, float, float, float)
         The bounding box to spatially subset to.
         Maps directly to GDAL's outputBounds option in osgeo.gdal.WarpOptions.
-    output_bounds_srs : str, default is WGS84
+    output_bounds_srs : str, default is EPSG:4326
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
     output_bounds: [float]
-    output_bounds_srs: str = "WGS84"
+    output_bounds_srs: str = "EPSG:4326"
 
     check:
         len(output_bounds) == 4, "Invalid bounding box: contains more or less than 4 values"
@@ -136,19 +136,6 @@ schema GdalWarpCutlineSpatialSubset:
     cutline_where?: str
     cutline_sql?: str
     cutline_blend?: int
-    cutline_srs: str = "WGS84"
+    cutline_srs: str = "EPSG:4326"
     crop_to_cutline: bool = True
-
-schema ClipExtentsToGranuleExtents:
-    spatial_extents: GdalWarpCutlineSpatialSubset | BoundingBoxToCutline
-    granule_extents: GranuleExtents | GdalWarpBoundsSpatialSubset
-
-schema BoundingBoxToCutline:
-    bounding_box: GdalWarpBoundsSpatialSubset
-
-schema GranuleExtents:
-    gdal_input_options: GdalInputOptions | InheritFromRecipe = InheritFromRecipe {}
-
-schema InheritFromRecipe:
-    """"""
 
