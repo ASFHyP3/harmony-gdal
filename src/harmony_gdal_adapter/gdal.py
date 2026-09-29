@@ -44,7 +44,9 @@ def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTransl
 def _execute_gdal_warp_recipe(srcDS: str, destName: str, recipe: GdalWarpRecipe) -> None:
     """Execute gdal warp operation from recipe."""
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
-        recipe.warp_options.spatial_subset = _convert_bounds_subset_to_cutline_subset(recipe.warp_options.spatial_subset)
+        recipe.warp_options.spatial_subset = _convert_bounds_subset_to_cutline_subset(
+            recipe.warp_options.spatial_subset
+        )
     recipe = _clip_spatial_extents(recipe)
     warp_options = _build_gdal_warp_options(recipe)
     Warp(destName, srcDS, **warp_options)
@@ -158,16 +160,18 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
     intersection_polygon = subset_polygon.Intersection(source_polygon)
     return intersection_polygon
 
-def _convert_bounds_subset_to_cutline_subset(bounds_subset: GdalWarpBoundsSpatialSubset) -> GdalWarpCutlineSpatialSubset:
+
+def _convert_bounds_subset_to_cutline_subset(
+    bounds_subset: GdalWarpBoundsSpatialSubset,
+) -> GdalWarpCutlineSpatialSubset:
     """Convert GdalWarpBoundsSpatialSubset to GdalWarpCutlineSpatialSubset."""
     polygon = _create_polygon_from_bounding_box(bounds_subset.output_bounds, bounds_subset.output_bounds_srs)
     wkt = polygon.ExportToWkt()
     cutline_subset = GdalWarpCutlineSpatialSubset(
-        cutline_wkt = wkt,
-        cutline_srs = bounds_subset.output_bounds_srs,
-        crop_to_cutline = True
+        cutline_wkt=wkt, cutline_srs=bounds_subset.output_bounds_srs, crop_to_cutline=True
     )
     return cutline_subset
+
 
 def _create_polygon_from_bounding_box(bounding_box: list[float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
     """Create polygon object from bounding box."""
