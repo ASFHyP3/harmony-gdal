@@ -32,7 +32,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
         pystac.Item
             a STAC catalog whose metadata and assets describe the service output
         """
-        if (requested_type := self.message.format.process('mime')) != 'image.tiff':
+        if (requested_type := self.message.format.process('mime')) != 'image/tiff':
             raise UnsupportedFileFormatError(requested_type)
 
         self.logger.info(f'Processing item {item.id}')
