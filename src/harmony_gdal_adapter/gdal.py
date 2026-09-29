@@ -26,12 +26,13 @@ def execute_recipe(recipe: Recipe) -> None:
     """
     srcDS = _build_input_string(recipe)
     destName = _build_output_string(recipe)
-    if isinstance(recipe.inner, GdalTranslateRecipe):
-        _execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
-    elif isinstance(recipe.inner, GdalWarpRecipe):
-        _execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
-    else:
-        raise TypeError('recipe must be GdalTranslateRecipe or GdalWarpRecipe')
+    match recipe.inner:
+        case GdalTranslateRecipe():
+            _execute_gdal_translate_recipe(srcDS, destName, recipe.inner)
+        case GdalWarpRecipe():
+            _execute_gdal_warp_recipe(srcDS, destName, recipe.inner)
+        case _:
+            raise TypeError('recipe must be GdalTranslateRecipe or GdalWarpRecipe')
 
 
 def _execute_gdal_translate_recipe(srcDS: str, destName: str, recipe: GdalTranslateRecipe) -> None:
@@ -111,10 +112,11 @@ def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
 
 def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     """Clip the spatial extents arguments to fit within the bounding box."""
-    if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
-        recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
-    if isinstance(recipe.warp_options.spatial_subset, GdalWarpCutlineSpatialSubset):
-        recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
+    match recipe.warp_options.spatial_subset:
+        case GdalWarpBoundsSpatialSubset():
+            recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
+        case GdalWarpCutlineSpatialSubset():
+            recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
     return recipe
 
 
