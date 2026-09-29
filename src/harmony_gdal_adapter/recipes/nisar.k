@@ -14,7 +14,7 @@ assert not (spatial_extents_wkt is not None and spatial_extents_bounding_box is 
 _gdal_options = schema.GdalOptions {
     input_options = schema.GdalInputOptions {
         driver = "HDF5"
-        dataset_path = variable_path
+        dataset_path = "/${variable_path}"
         input_file_path = input_filename
     }
     output_options = schema.GdalOutputOptions {
