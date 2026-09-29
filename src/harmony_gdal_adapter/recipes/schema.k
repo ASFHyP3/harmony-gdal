@@ -129,7 +129,7 @@ schema GdalWarpCutlineSpatialSubset:
         The cutline blend distance in pixels.
         Maps directly to GDAL's cutlineBlend option in osgeo.gdal.WarpOptions.
     crop_to_cutline : bool, default is True
-        Wether to use the cutline extent for output bounds.
+        Whether to use the cutline extent for output bounds.
         Maps directly to GDALs cropToCutline option isn osgeo.gdal.WarpOptions.
     """
     cutline_wkt: str
