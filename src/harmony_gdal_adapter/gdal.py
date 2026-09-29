@@ -153,7 +153,7 @@ def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> list[float]:
 
 def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWarpRecipe) -> ogr.Geometry:
     """Calculate the intersection of subset polygon spatial extent and granule polygon extent."""
-    source_polygon = _get_asset_polygon(recipe, subset_polygon.GetSpatialReference())
+    source_polygon = _get_granule_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.IsValid(), 'spatial extent polygon invalid'
     assert source_polygon.IsValid(), 'source data polygon invalid'
     assert subset_polygon.Intersects(source_polygon), 'Subset polygon and source polygon do not overlap'
@@ -189,8 +189,8 @@ def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.g
     return ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
 
 
-def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
-    """Return asset spatial extents as a polygon in the SRS of the bounding polygon."""
+def _get_granule_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
+    """Return granule spatial extents as a polygon in the SRS of the bounding polygon."""
     # force longitude to x axis
     bounds_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     gdal_driver = recipe.gdal_options.input_options.driver
@@ -201,6 +201,6 @@ def _get_asset_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.
     dataset = gdal.Open(gdal_dataset_string)
     dataset_extents = dataset.GetExtent(srs=bounds_srs)
     dataset_bounding_box = [dataset_extents[0], dataset_extents[2], dataset_extents[1], dataset_extents[3]]
-    asset_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
-    asset_polygon.AssignSpatialReference(bounds_srs)
-    return asset_polygon
+    granule_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
+    granule_polygon.AssignSpatialReference(bounds_srs)
+    return granule_polygon

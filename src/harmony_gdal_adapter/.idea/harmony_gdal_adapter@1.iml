@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../.." isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/.." isTestSource="false" />
     </content>
+    <orderEntry type="jdk" jdkName="~/miniforge3/envs/harmony-gdal-adapter" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
