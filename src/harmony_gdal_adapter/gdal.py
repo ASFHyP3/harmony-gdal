@@ -167,27 +167,29 @@ def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     granule_polygon = _get_granule_polygon(recipe)
     match recipe.warp_options.spatial_subset:
         case GdalWarpBoundsSpatialSubset() as bounds_subset:
-            recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(bounds_subset, granule_polygon)
+            recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(
+                bounds_subset, granule_polygon
+            )
         case GdalWarpCutlineSpatialSubset() as cutline_subset:
-            recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(cutline_subset, granule_polygon)
+            recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(
+                cutline_subset, granule_polygon
+            )
     return recipe
 
 
 def _calculate_wkt_intersection(cutline_subset: GdalWarpCutlineSpatialSubset, granule_polygon: ogr.Geometry) -> str:
     """Calculate the intersection of wkt spatial extent and granule extent."""
-    subset_polygon = _create_polygon_from_wkt(
-        cutline_subset.cutline_wkt, cutline_subset.cutline_srs
-    )
+    subset_polygon = _create_polygon_from_wkt(cutline_subset.cutline_wkt, cutline_subset.cutline_srs)
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, granule_polygon)
     intersection_wkt = intersection_polygon.ExportToWkt()
     return intersection_wkt
 
 
-def _calculate_bounding_box_intersection(bounds_subset: GdalWarpBoundsSpatialSubset, granule_polygon: ogr.Geometry) -> list[float]:
+def _calculate_bounding_box_intersection(
+    bounds_subset: GdalWarpBoundsSpatialSubset, granule_polygon: ogr.Geometry
+) -> list[float]:
     """Calculate the intersection of bounding box spatial extent and granule extent."""
-    subset_polygon = _create_polygon_from_bounding_box(
-        bounds_subset.output_bounds, bounds_subset.output_bounds_srs
-    )
+    subset_polygon = _create_polygon_from_bounding_box(bounds_subset.output_bounds, bounds_subset.output_bounds_srs)
     intersection_polygon = _calculate_polygon_intersection(subset_polygon, granule_polygon)
     intersection_envelope = intersection_polygon.GetEnvelope()
     # envelope is in format [minx, maxx, miny, maxy], must be rearranged to [minx, min, maxx, maxy]
@@ -210,7 +212,7 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, granule_polygo
 
 
 def _convert_bounds_subset_to_cutline_subset(
-        bounds_subset: GdalWarpBoundsSpatialSubset,
+    bounds_subset: GdalWarpBoundsSpatialSubset,
 ) -> GdalWarpCutlineSpatialSubset:
     """Convert GdalWarpBoundsSpatialSubset to GdalWarpCutlineSpatialSubset."""
     polygon = _create_polygon_from_bounding_box(bounds_subset.output_bounds, bounds_subset.output_bounds_srs)
@@ -259,4 +261,3 @@ def _get_granule_polygon(recipe: GdalWarpRecipe) -> ogr.Geometry:
     granule_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
     granule_polygon.AssignSpatialReference(subset_srs)
     return granule_polygon
-

@@ -11,7 +11,7 @@ def make_recipe_input_options(**kwargs) -> RecipeInputOptions:
         collection_shortname='foobar',
         output_type='GTiff',
         variable_path='/science/LSAR/GCOV/grids/frequencyA/HHHH',
-        **kwargs
+        **kwargs,
     )
 
     return defaults
@@ -98,11 +98,7 @@ def test_spatial_subset_out_of_bounds(data_dir, gcov_granule):
 
 def test_reproject(data_dir, gcov_granule):
     output = data_dir / 'output_reproject.tif'
-    overrides = {
-        'output_filename': str(output),
-        'input_filename': str(gcov_granule),
-        'target_srs': 'EPSG:3412'
-    }
+    overrides = {'output_filename': str(output), 'input_filename': str(gcov_granule), 'target_srs': 'EPSG:3412'}
     options = make_recipe_input_options(**overrides)
     recipe = build_recipe(options)
     assert isinstance(recipe.inner, GdalWarpRecipe)
