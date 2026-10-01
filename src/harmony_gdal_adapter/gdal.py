@@ -14,7 +14,6 @@ from harmony_gdal_adapter.build_recipes import (
     GdalWarpRecipe,
     Recipe,
 )
-
 from harmony_gdal_adapter.exceptions import InvalidProjectionError, MissingVariableError
 
 
@@ -79,7 +78,6 @@ def execute_recipe(recipe: Recipe) -> None:
     source_dataset = _build_input_string(recipe)
     destination_name = _build_output_string(recipe)
     UseExceptions()
-    print("I'm in the right branch!")
     _validate_recipe_input(recipe)
 
     match recipe.inner:
@@ -97,11 +95,12 @@ def _execute_gdal_translate_recipe(source_dataset: str, destination_name: str, r
 
 
 def _execute_gdal_warp_recipe(source_dataset: str, destination_name: str, recipe: GdalWarpRecipe) -> None:
-    warp_options = _build_gdal_warp_options(recipe)
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
         recipe.warp_options.spatial_subset = _convert_bounds_subset_to_cutline_subset(
             recipe.warp_options.spatial_subset
         )
+    recipe = _clip_spatial_extents(recipe)
+    warp_options = _build_gdal_warp_options(recipe)
     Warp(destination_name, source_dataset, **warp_options)
 
 
@@ -206,6 +205,7 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
     source_polygon = _get_granule_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.IsValid(), 'spatial extent polygon invalid'
     assert source_polygon.IsValid(), 'source data polygon invalid'
+    print(f"do they intersect?: {subset_polygon.Intersects(source_polygon)}")
     assert subset_polygon.Intersects(source_polygon), 'Subset polygon and source polygon do not overlap'
     intersection_polygon = subset_polygon.Intersection(source_polygon)
     return intersection_polygon

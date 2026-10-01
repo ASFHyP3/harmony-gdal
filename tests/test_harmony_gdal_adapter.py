@@ -10,7 +10,7 @@ def make_recipe_input_options(**kwargs) -> RecipeInputOptions:
     defaults = RecipeInputOptions(
         collection_shortname='foobar',
         output_type='GTiff',
-        variable_path='//science/LSAR/GCOV/grids/frequencyA/HHHH',
+        variable_path='/science/LSAR/GCOV/grids/frequencyA/HHHH',
         **kwargs
     )
 
@@ -59,7 +59,7 @@ def test_spatial_subset_bounding_box(data_dir, gcov_granule):
     overrides = {
         'output_filename': str(output),
         'input_filename': str(gcov_granule),
-        'spatial_extents_bounding_box': [-151.470826, 0.036081, -151.417068, 0.009020],
+        'spatial_extents_bounding_box': [-151.470826, 0.009020, -151.417068, 0.036081],
     }
     options = make_recipe_input_options(**overrides)
     recipe = build_recipe(options)
