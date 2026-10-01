@@ -205,7 +205,6 @@ def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWa
     source_polygon = _get_granule_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.IsValid(), 'spatial extent polygon invalid'
     assert source_polygon.IsValid(), 'source data polygon invalid'
-    print(f"do they intersect?: {subset_polygon.Intersects(source_polygon)}")
     assert subset_polygon.Intersects(source_polygon), 'Subset polygon and source polygon do not overlap'
     intersection_polygon = subset_polygon.Intersection(source_polygon)
     return intersection_polygon
