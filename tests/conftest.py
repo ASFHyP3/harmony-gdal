@@ -17,7 +17,7 @@ def data_dir():
 
 @pytest.fixture
 def gcov_granule(tmp_path) -> Path:
-    """Generate mock GCOV file for every test.
+    """Generate mock GCOV file for all tests except antimeridian test.
 
     Can be manually generated with: pytest --basetemp=./.pytest_tmp.
     """
