@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -e
+
+# source the .env file if it exists
+[[ -f .env ]] && source .env
+
+image="harmonyservices/harmony-gdal-adapter"
+tag=${1:-latest}
+
+if [ -d "deps" ]; then
+  rm -rf deps
+fi
+mkdir deps
+
+SERVICE_LIB_DIR="NO_SUCH_DIR"
+if [ -d "$LOCAL_SVCLIB_DIR" ]; then
+  echo "Using local copy of harmony-service-lib"
+  SERVICE_LIB_DIR=$(basename $LOCAL_SVCLIB_DIR)
+  cp -R $LOCAL_SVCLIB_DIR deps/
+fi
+
+PLATFORM_ARG=""
+if [ -n "$PLATFORM" ]; then
+  PLATFORM_ARG="--platform ${PLATFORM}"
+fi
+
+# If we're running Docker in Docker (DIND) then the docker daemon is on the host
+if [ -n "$DIND" ]; then
+  docker -H $DOCKER_DAEMON_ADDR build ${PLATFORM_ARG} --build-arg service_lib_dir="$SERVICE_LIB_DIR" -t ${image}:${ag} .
+else
+  docker build ${PLATFORM_ARG} --build-arg service_lib_dir="$SERVICE_LIB_DIR" --network host -t ${image}:${tag} .
+fi

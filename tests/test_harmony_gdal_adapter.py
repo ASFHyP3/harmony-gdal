@@ -6,21 +6,20 @@ from harmony_gdal_adapter.build_recipes import GdalTranslateRecipe, GdalWarpReci
 from harmony_gdal_adapter.gdal import execute_recipe
 
 
-def make_options(**overrides) -> RecipeInputOptions:
-    defaults = {
-        'collection_shortname': 'foobar',
-        'output_type': 'GTiff',
-        'output_filename': 'data/output.tif',
-        'variable_path': '//science/LSAR/GCOV/grids/frequencyA/HHHH',
-    }
-    defaults.update(overrides)
-    return RecipeInputOptions(**defaults)
+def make_recipe_input_options(**kwargs) -> RecipeInputOptions:
+    defaults = RecipeInputOptions(
+        collection_shortname='foobar',
+        output_type='GTiff',
+        variable_path='//science/LSAR/GCOV/grids/frequencyA/HHHH',
+        **kwargs,
+    )
+
+    return defaults
 
 
 def test_variable_subset(data_dir, gcov_granule):
     output = data_dir / 'output_variable_extracton.tif'
-    overrides = {'output_filename': str(output), 'input_filename': str(gcov_granule)}
-    options = make_options(**overrides)
+    options = make_recipe_input_options(output_filename=str(output), input_filename=str(gcov_granule))
     recipe = build_recipe(options)
     assert isinstance(recipe.inner, GdalTranslateRecipe)
     execute_recipe(recipe)
@@ -99,8 +98,9 @@ def test_spatial_subset_out_of_bounds(data_dir, gcov_granule):
 
 def test_reproject(data_dir, gcov_granule):
     output = data_dir / 'output_reproject.tif'
-    overrides = {'output_filename': str(output), 'input_filename': str(gcov_granule), 'target_srs': 'EPSG:3412'}
-    options = make_options(**overrides)
+    options = make_recipe_input_options(
+        output_filename=str(output), input_filename=str(gcov_granule), target_srs='EPSG:3412'
+    )
     recipe = build_recipe(options)
     assert isinstance(recipe.inner, GdalWarpRecipe)
     execute_recipe(recipe)
