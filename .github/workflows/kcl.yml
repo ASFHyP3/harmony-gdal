@@ -24,7 +24,7 @@ jobs:
         run: go install kcl-lang.io/cli/cmd/kcl@latest
 
       - name: Run KCL Lint
-        run: kcl lint .
+        run: kcl lint ./...
 
       - name: Run kcl fmt check
         run: |
