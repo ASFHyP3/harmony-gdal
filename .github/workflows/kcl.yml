@@ -1,0 +1,35 @@
+name: KCL Lint
+
+on:
+  pull_request:
+    paths:
+      - "**/*.k"
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install KCL CLI
+        run: go install kcl-lang.io/cli/cmd/kcl@latest
+
+      - name: Run KCL Lint
+        run: kcl lint .
+
+      - name: Run kcl fmt check
+        run: |
+          # Run formatter recursively across the repository
+          kcl fmt ./...
+
+          # Check if git has any uncommitted changes from formatting
+          git diff --exit-code || (echo "Error: KCL files are not formatted correctly. Run 'kcl fmt ./...' locally and commit the changes." && exit 1)
