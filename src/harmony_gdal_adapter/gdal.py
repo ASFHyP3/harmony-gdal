@@ -1,7 +1,7 @@
 """Execute GDAL recipes."""
 
 from itertools import chain
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from osgeo import gdal, ogr, osr
 from osgeo.gdal import OpenEx, Translate, UseExceptions, Warp
@@ -99,7 +99,8 @@ def _execute_gdal_warp_recipe(source_dataset: str, destination_name: str, recipe
         recipe.warp_options.spatial_subset = _convert_bounds_subset_to_cutline_subset(
             recipe.warp_options.spatial_subset
         )
-    recipe = _clip_spatial_extents(recipe)
+    if recipe.warp_options.spatial_subset:
+        recipe = _clip_spatial_extents(recipe)
     warp_options = _build_gdal_warp_options(recipe)
     Warp(destination_name, source_dataset, **warp_options)
 
@@ -116,7 +117,7 @@ def _build_output_string(recipe: Recipe) -> str:
     return str(output_options.output_file_path)
 
 
-def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> dict:
+def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> _WarpOptions:
     translate_options = _build_gdal_output_options(recipe.gdal_options.output_options)
     return translate_options
 
@@ -151,44 +152,43 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
                     cropToCutline=cutline.crop_to_cutline,
                 )
 
-    warp_options = cast(_WarpOptions, {k: v for k, v in warp_options.items() if v is not None})
-
     return warp_options
 
 
-def _build_gdal_output_options(output_options: GdalOutputOptions) -> dict:
+def _build_gdal_output_options(output_options: GdalOutputOptions) -> _WarpOptions:
     """Build gdalOptions dictionary."""
-    gdal_output_options = {}
+    gdal_output_options = _WarpOptions()
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options
 
 
 def _clip_spatial_extents(recipe: GdalWarpRecipe) -> GdalWarpRecipe:
     """Clip the spatial extents arguments to fit within the bounding box."""
+    granule_polygon = _get_granule_polygon(recipe)
     match recipe.warp_options.spatial_subset:
-        case GdalWarpBoundsSpatialSubset():
-            recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(recipe)
-        case GdalWarpCutlineSpatialSubset():
-            recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(recipe)
+        case GdalWarpBoundsSpatialSubset() as bounds_subset:
+            recipe.warp_options.spatial_subset.output_bounds = _calculate_bounding_box_intersection(bounds_subset, granule_polygon)
+        case GdalWarpCutlineSpatialSubset() as cutline_subset:
+            recipe.warp_options.spatial_subset.cutline_wkt = _calculate_wkt_intersection(cutline_subset, granule_polygon)
     return recipe
 
 
-def _calculate_wkt_intersection(recipe: GdalWarpRecipe) -> str:
+def _calculate_wkt_intersection(cutline_subset: GdalWarpCutlineSpatialSubset, granule_polygon: ogr.Geometry) -> str:
     """Calculate the intersection of wkt spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_wkt(
-        recipe.warp_options.spatial_subset.cutline_wkt, recipe.warp_options.spatial_subset.cutline_srs
+        cutline_subset.cutline_wkt, cutline_subset.cutline_srs
     )
-    intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
+    intersection_polygon = _calculate_polygon_intersection(subset_polygon, granule_polygon)
     intersection_wkt = intersection_polygon.ExportToWkt()
     return intersection_wkt
 
 
-def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> list[float]:
+def _calculate_bounding_box_intersection(bounds_subset: GdalWarpBoundsSpatialSubset, granule_polygon: ogr.Geometry) -> list[float]:
     """Calculate the intersection of bounding box spatial extent and granule extent."""
     subset_polygon = _create_polygon_from_bounding_box(
-        recipe.warp_options.spatial_subset.output_bounds, recipe.warp_options.spatial_subset.output_bounds_srs
+        bounds_subset.output_bounds, bounds_subset.output_bounds_srs
     )
-    intersection_polygon = _calculate_polygon_intersection(subset_polygon, recipe)
+    intersection_polygon = _calculate_polygon_intersection(subset_polygon, granule_polygon)
     intersection_envelope = intersection_polygon.GetEnvelope()
     # envelope is in format [minx, maxx, miny, maxy], must be rearranged to [minx, min, maxx, maxy]
     intersection_bounding_box = [
@@ -200,13 +200,12 @@ def _calculate_bounding_box_intersection(recipe: GdalWarpRecipe) -> list[float]:
     return intersection_bounding_box
 
 
-def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, recipe: GdalWarpRecipe) -> ogr.Geometry:
+def _calculate_polygon_intersection(subset_polygon: ogr.Geometry, granule_polygon: ogr.Geometry) -> ogr.Geometry:
     """Calculate the intersection of subset polygon spatial extent and granule polygon extent."""
-    source_polygon = _get_granule_polygon(recipe, subset_polygon.GetSpatialReference())
     assert subset_polygon.IsValid(), 'spatial extent polygon invalid'
-    assert source_polygon.IsValid(), 'source data polygon invalid'
-    assert subset_polygon.Intersects(source_polygon), 'Subset polygon and source polygon do not overlap'
-    intersection_polygon = subset_polygon.Intersection(source_polygon)
+    assert granule_polygon.IsValid(), 'source data polygon invalid'
+    assert subset_polygon.Intersects(granule_polygon), 'Subset polygon and source polygon do not overlap'
+    intersection_polygon = subset_polygon.Intersection(granule_polygon)
     return intersection_polygon
 
 
@@ -222,7 +221,7 @@ def _convert_bounds_subset_to_cutline_subset(
     return cutline_subset
 
 
-def _create_polygon_from_bounding_box(bounding_box: list[float], bounding_box_srs: str | None) -> ogr.geometry.Polygon:
+def _create_polygon_from_bounding_box(bounding_box: list[float], bounding_box_srs: str | None) -> ogr.Geometry:
     """Create polygon object from bounding box."""
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(bounding_box_srs)
@@ -231,26 +230,33 @@ def _create_polygon_from_bounding_box(bounding_box: list[float], bounding_box_sr
     return polygon
 
 
-def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.geometry.Polygon:
+def _create_polygon_from_wkt(cutline_wkt: str, cutline_srs: str | None) -> ogr.Geometry:
     """Create polygon object from wkt string."""
     polygon_srs = osr.SpatialReference()
     polygon_srs.SetFromUserInput(cutline_srs)
     return ogr.CreateGeometryFromWkt(cutline_wkt, reference=polygon_srs)
 
 
-def _get_granule_polygon(recipe: Recipe, bounds_srs: osr.SpatialReference) -> ogr.geometry.Polygon:
-    """Return granule spatial extents as a polygon in the SRS of the bounding polygon."""
+def _get_granule_polygon(recipe: GdalWarpRecipe) -> ogr.Geometry:
+    """Return granule spatial extents as a polygon in the SRS of the spatial subset."""
     # force longitude to x axis
-    bounds_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    spatial_subset = recipe.warp_options.spatial_subset
+    subset_srs = osr.SpatialReference()
+    match spatial_subset:
+        case GdalWarpBoundsSpatialSubset():
+            subset_srs.SetFromUserInput(spatial_subset.output_bounds_srs)
+        case GdalWarpCutlineSpatialSubset():
+            subset_srs.SetFromUserInput(spatial_subset.cutline_srs)
+    subset_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     gdal_driver = recipe.gdal_options.input_options.driver
     if recipe.gdal_options.input_options.dataset_path:
         gdal_dataset_string = f'{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}:{recipe.gdal_options.input_options.dataset_path}'
     else:
         gdal_dataset_string = f'{gdal_driver}:{recipe.gdal_options.input_options.input_file_path}'
     dataset = gdal.Open(gdal_dataset_string)
-    dataset_extents = dataset.GetExtent(srs=bounds_srs)
+    dataset_extents = dataset.GetExtent(srs=subset_srs)
     dataset_bounding_box = [dataset_extents[0], dataset_extents[2], dataset_extents[1], dataset_extents[3]]
     granule_polygon = ogr.CreateGeometryFromEnvelope(*dataset_bounding_box)
-    granule_polygon.AssignSpatialReference(bounds_srs)
+    granule_polygon.AssignSpatialReference(subset_srs)
     return granule_polygon
 
