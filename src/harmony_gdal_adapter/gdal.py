@@ -79,6 +79,7 @@ def execute_recipe(recipe: Recipe) -> None:
     source_dataset = _build_input_string(recipe)
     destination_name = _build_output_string(recipe)
     UseExceptions()
+    print("I'm in the right branch!")
     _validate_recipe_input(recipe)
 
     match recipe.inner:
