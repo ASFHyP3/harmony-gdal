@@ -37,7 +37,7 @@ recipe: schema.Recipe = schema.Recipe {
                 elif spatial_extents_bounding_box:
                     spatial_subset = schema.GdalWarpBoundsSpatialSubset {
                          output_bounds = spatial_extents_bounding_box
-                         output_bounds_srs = "EPSG:4326",
+                         output_bounds_srs = "EPSG:4326"
                     }
                 if target_srs:
                     target_srs = target_srs
