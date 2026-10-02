@@ -98,12 +98,15 @@ schema GdalWarpBoundsSpatialSubset:
     output_bounds : (float, float, float, float)
         The bounding box to spatially subset to.
         Maps directly to GDAL's outputBounds option in osgeo.gdal.WarpOptions.
-    output_bounds_srs : str, default is WGS84
+    output_bounds_srs : str, default is EPSG:4326
         The bounding box to spatially subset to. Must be an accepted GDAL SRS string.
         Maps directly to GDAL's outputBoundsSRS option in osgeo.gdal.WarpOptions.
     """
-    output_bounds: (float, float, float, float)
-    output_bounds_srs: str = "WGS84"
+    output_bounds: [float]
+    output_bounds_srs: str = "EPSG:4326"
+
+    check:
+        len(output_bounds) == 4, "Invalid bounding box: contains more or less than 4 values"
 
 schema GdalWarpCutlineSpatialSubset:
     """GdalWarpCutlineSpatialSubset allows performing spatial subsetting with a WKT string utilizing GDAL Warp's cutline options.
@@ -127,12 +130,11 @@ schema GdalWarpCutlineSpatialSubset:
         Maps directly to GDAL's cutlineBlend option in osgeo.gdal.WarpOptions.
     crop_to_cutline : bool, default is True
         Wether to use the cutline extent for output bounds.
-        Maps directly to GDALts cropToCutline option isn osgeo.gdal.WarpOptions.
+        Maps directly to GDALs cropToCutline option isn osgeo.gdal.WarpOptions.
     """
     cutline_wkt: str
     cutline_where?: str
     cutline_sql?: str
     cutline_blend?: int
-    cutline_srs: str = "WGS84"
+    cutline_srs: str = "EPSG:4326"
     crop_to_cutline: bool = True
-

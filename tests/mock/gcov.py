@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from osgeo import osr
 from xarray import DataArray, DataTree, Dataset, Variable
 
@@ -10,12 +12,12 @@ VALUE_SCALE = 100  # stretches stored values only; unrelated to geography
 DEFAULT_EPSG = 32606  # UTM zone 6N
 
 
-def _coordinate_variable(dim: str, values: list, is_x: bool) -> Variable:
+def _coordinate_variable(dim: str, values: list, is_x: bool, units: str) -> Variable:
     """Create the coordinate variable emulating real GCOV product."""
     attrs = {
         'standard_name': 'projection_x_coordinate' if is_x else 'projection_y_coordinate',
         'long_name': f'{"X" if is_x else "Y"} coordinates of projection',
-        'units': 'meters',
+        'units': units,
         'pixel_coordinate_convention': 'center',
     }
     return Variable(dims=dim, data=values, attrs=attrs).astype('float64')
@@ -25,6 +27,7 @@ def _projection_variable(epsg: int) -> DataArray:
     """Create projection as variable emulating real GCOV product."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(epsg)
+    print(srs)
     ogc_projection = srs.GetAttrValue('PROJECTION')  # e.g. 'Transverse_Mercator', 'Polar_Stereographic'
 
     attrs = {
@@ -42,20 +45,29 @@ def _projection_variable(epsg: int) -> DataArray:
     return DataArray(epsg, attrs=attrs)
 
 
-def mock_gcov_granule(tmp_path, epsg: int = 32606):
+def mock_gcov_granule(
+    tmp_path: Path,
+    granule_file: str = 'mock_gcov_granule.h5',
+    x0: float = 0,
+    y0: float = 0,
+    epsg: int = DEFAULT_EPSG,
+    step_size: float = STEP_SIZE,
+    value_scale: float = VALUE_SCALE,
+    num_cols: int = NCOLS,
+    num_rows: int = NROWS,
+) -> Path:
     """Creates a mock gcov .h5 granule with sufficient data to be tested by harmony-gdal tool.
 
     frequencyA contains a 100x50 HHHH raster with pixel values = column index * value_scale
-
     frequencyB contains a 100x50 VVVV raster with pixel values = column index * value_scale,
     and a VHVH raster with pixel values = row index * value_scale (see value_scale below).
     """
-    step_size = 100.0
-    value_scale = 100
-    x_coordinates = [ii * step_size for ii in range(0, 100, 1)]
-    y_coordinates = [ii * step_size for ii in range(50, 0, -1)]
-    x_values = [ii * value_scale for ii in range(0, 100, 1)]
-    y_values = [ii * value_scale for ii in range(50, 0, -1)]
+    x_coordinates = [x0 + ii * step_size for ii in range(0, num_cols, 1)]
+    y_coordinates = [y0 + ii * step_size for ii in range(num_rows, 0, -1)]
+    x_values = [ii * value_scale for ii in range(0, num_cols, 1)]
+    y_values = [ii * value_scale for ii in range(num_rows, 0, -1)]
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(epsg)
 
     dt = DataTree.from_dict(
         {
@@ -72,8 +84,12 @@ def mock_gcov_granule(tmp_path, epsg: int = 32606):
                         data=[[0.0 if x == y else 1.0 for x in x_coordinates] for y in y_coordinates],
                         attrs={'grid_mapping': 'projection'},
                     ).astype('float32'),
-                    'xCoordinates': _coordinate_variable('xCoordinates', x_coordinates, is_x=True),
-                    'yCoordinates': _coordinate_variable('yCoordinates', y_coordinates, is_x=False),
+                    'xCoordinates': _coordinate_variable(
+                        'xCoordinates', x_coordinates, is_x=True, units=srs.GetAttrValue('UNIT', 0)
+                    ),
+                    'yCoordinates': _coordinate_variable(
+                        'yCoordinates', y_coordinates, is_x=False, units=srs.GetAttrValue('UNIT', 0)
+                    ),
                     'xCoordinateSpacing': step_size,
                     'yCoordinateSpacing': -step_size,
                     'listOfPolarizations': (
@@ -100,8 +116,12 @@ def mock_gcov_granule(tmp_path, epsg: int = 32606):
                         data=[[255.0 if x == y else 2.0 for x in x_coordinates] for y in y_coordinates],
                         attrs={'grid_mapping': 'projection'},
                     ).astype('float32'),
-                    'xCoordinates': _coordinate_variable('xCoordinates', x_coordinates, is_x=True),
-                    'yCoordinates': _coordinate_variable('yCoordinates', y_coordinates, is_x=False),
+                    'xCoordinates': _coordinate_variable(
+                        'xCoordinates', x_coordinates, is_x=True, units=srs.GetAttrValue('UNIT', 0)
+                    ),
+                    'yCoordinates': _coordinate_variable(
+                        'yCoordinates', y_coordinates, is_x=False, units=srs.GetAttrValue('UNIT', 0)
+                    ),
                     'xCoordinateSpacing': step_size,
                     'yCoordinateSpacing': -step_size,
                     'listOfPolarizations': (
@@ -132,7 +152,7 @@ def mock_gcov_granule(tmp_path, epsg: int = 32606):
         },
     )
 
-    output_path = tmp_path / 'mock_gcov_granule.h5'
+    output_path = tmp_path / granule_file
     dt.to_netcdf(
         filepath=output_path,
         engine='h5netcdf',
