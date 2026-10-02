@@ -1,38 +1,28 @@
-# nisar-py
-
-NISAR data transformations.
+# Harmony GDAL Adapter
 
 ## Developer setup
 
 ```
 mamba env create -f environment.yml
-mamba activate nisar-py
-pip install -e .
+mamba activate harmony-gdal-adapter
 pytest
 ```
 
-## GCOV RGB
+## Harmony GDAL Adapter CLI
 
-The [`nisar_py.gcov_rgb`](./src/nisar_py/gcov_rgb.py) module converts a dual-pol or quad-pol GCOV product
-to a false color RGB decomposition of the co- and cross-polarized data in Cloud Optimized GeoTIFF format,
-and was adapted from [`hyp3lib.rtc2color`](https://github.com/ASFHyP3/hyp3-lib/blob/develop/src/hyp3lib/rtc2color.py). 
-Quad-pol GCOV products will use HH and HV for the co- and cross-polarized data inputs. 
-The RGB decomposition algorithm is described [here](https://github.com/ASFHyP3/hyp3-lib/blob/develop/docs/rgb_decomposition.md).
+You can use the local development testing cli by running `hga` in the harmony-gdal-adapter environment.
 
-To use the module, make sure you're working within the `nisar-py` conda/mamba environment,
-as shown in [developer setup](#developer-setup). Then call `make_rgb_geotiff`, e.g:
-
-```python
-from nisar_py.gcov_rgb import make_rgb_geotiff
-from pathlib import Path
-
-make_rgb_geotiff(
-    gcov_product=Path('NISAR_L2_PR_GCOV_004_042_D_070_4005_DHDH_A_20251101T025640_20251101T025714_X05009_N_F_J_001.h5'),
-    output_path=Path('.'),
-    frequency='A',
-)
+For example to perform a simple dataset extraction to geotiff:
+```bash
+hga --input-filename "NISAR_L2_PR_GCOV_005_149_A_024_4005_DHDH_A_20251120T123755_20251120T123830_X05009_N_F_J_001.h5" --collection-shortname "foobar" --output-type GTiff --output-filename output.tif --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH"
 ```
 
-The above example produces an image like the one below:
+To perform a spatial subsetting operation:
+```bash
+hga --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output_cropped.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --spatial-extents "POLYGON((-125.1989 49.2151,-125.1461 49.2151,-125.1461 49.2583,-125.1989 49.2583,-125.1989 49.2151))"
+```
 
-![gcov_rgb_example.png](./gcov_rgb_example.png "GCOV RGB example image")
+To perform a reprojection operation:
+```
+hga --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --target-srs EPSG:32602
+```
