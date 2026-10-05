@@ -1,4 +1,4 @@
-"""Harmony service for the GDAL Adapter."""
+"""Harmony service for the GDAL Adapter. This is the entrypoint for the Harmony CLI."""
 
 import argparse
 import tempfile
