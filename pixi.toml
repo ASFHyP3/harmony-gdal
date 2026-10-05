@@ -20,4 +20,4 @@ h5py = "*"
 
 [pypi-dependencies]
 pytest-console-scripts = ">=1.4.1, <2"
-harmony-gdal-adapter = { path = "/home/sglarsen/Dev/harmony-gdal", editable = true, extras = ["develop"] }
+harmony-gdal-adapter = { path = ".", editable = true, extras = ["develop"] }
