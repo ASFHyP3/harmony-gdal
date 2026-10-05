@@ -9,14 +9,14 @@ permissions:
   contents: write
 
 jobs:
-  check:
+  update-conda-environment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.10.2
-      - name: Check Conda Environment Matches
+      - name: Generate environment.yaml from pixi.lock
         run: |
           pixi workspace export conda-environment -n harmony-gdal-adapter --from-lock-file > environment.yml
       - name: Commit and Push Changes
