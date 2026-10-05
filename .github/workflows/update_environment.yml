@@ -26,7 +26,7 @@ jobs:
 
           git add environment.yml
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update enviroment.yaml from CI workflow [skip ci]"
+            git commit -m "chore: update enviroment.yaml from CI workflow"
             git push origin HEAD:${{ github.head_ref || github.ref_name }}
           else
             echo "No changes to commit"
