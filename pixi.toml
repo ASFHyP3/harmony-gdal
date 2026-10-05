@@ -26,6 +26,6 @@ ruff = "*"
 mypy = "*"
 
 [pypi-dependencies]
-harmony-gdal-adapter = { path = "/home/sglarsen/Dev/harmony-gdal", editable = true }
+harmony-gdal-adapter = { path = ".", editable = true }
 pytest-console-scripts = ">=1.4.1, <2"
 
