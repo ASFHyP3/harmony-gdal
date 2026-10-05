@@ -78,7 +78,7 @@ class InvalidProjectionError(HGANoRetryException):
         Args:
             requested_projection (str): The requested projection as a string.
         """
-        super().__init__(f'Requested projection is invalid: {requested_projection}')
+        super().__init__(f'Requested projection is invalid: {requested_projection}.')
 
 
 class InputValidationError(HGANoRetryException):
@@ -91,3 +91,11 @@ class InputValidationError(HGANoRetryException):
             error (str): The JSON data given by the error.
         """
         super().__init__(f'{error}')
+
+
+class EmptyOutputError(HGANoRetryException):
+    """Raised when none of the input variables are present."""
+
+    def __init__(self) -> None:
+        """Initialize a new EmptyOutputError."""
+        super().__init__('None of the requested variables are present in the source file.')

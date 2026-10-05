@@ -2,7 +2,9 @@
 
 import argparse
 import tempfile
+from os.path import splitext
 from pathlib import Path
+from urllib.parse import urlparse
 
 import harmony_service_lib
 import pystac
@@ -10,7 +12,13 @@ from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, stage
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
-from harmony_gdal_adapter.exceptions import DownloadError, HGANoRetryException, UnsupportedFileFormatError
+from harmony_gdal_adapter.exceptions import (
+    DownloadError,
+    EmptyOutputError,
+    HGANoRetryException,
+    MissingVariableError,
+    UnsupportedFileFormatError,
+)
 from harmony_gdal_adapter.gdal import execute_recipe
 
 
@@ -50,41 +58,54 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             except Exception as exception:  # noqa: BLE001
                 raise DownloadError(granule_url, str(exception))
 
-            output_path = Path(f'{temp_dir}/output.tif')
-
-            input_options = RecipeInputOptions(
-                input_filename=granule_filename,
-                output_filename=str(output_path),
-                collection_shortname=str(source.process('shortName')),
-                output_type='COG',
-                variable_path=source.process('variables')[0].fullPath,
-                target_srs=self.message.format.process('srs').epsg
-                if self.message.format and self.message.format.crs
-                else None,
-                spatial_extents_bounding_box=self.message.subset.process('bbox')
-                if self.message.subset and self.message.subset.bbox
-                else None,
-            )
-
-            recipe = build_recipe(input_options)
-
-            try:
-                execute_recipe(recipe)
-            except RuntimeError as e:
-                raise HGANoRetryException(str(e))
-
-            url = stage(
-                local_filename=str(output_path),
-                remote_filename=output_path.name,
-                mime='image/tiff',
-                location=self.message.stagingLocation,
-                logger=self.logger,
-            )
+            granule_name = Path(urlparse(granule_url).path).stem
 
             result = item.clone()
-            result.assets = {
-                'rgb_browse': pystac.Asset(url, title=output_path.name, media_type='image/tiff', roles=['visual'])
-            }
+            result.assets = {}
+
+            for variable in source.process('variables'):
+                output_path = Path(f'{temp_dir}/{granule_name}{variable.fullPath.replace("/", "_")}.tif')
+
+                input_options = RecipeInputOptions(
+                    input_filename=granule_filename,
+                    output_filename=str(output_path),
+                    collection_shortname=str(source.process('shortName')),
+                    output_type='COG',
+                    variable_path=source.process('variables')[0].fullPath,
+                    target_srs=self.message.format.process('srs').epsg
+                    if self.message.format and self.message.format.crs
+                    else None,
+                    spatial_extents_bounding_box=self.message.subset.process('bbox')
+                    if self.message.subset and self.message.subset.bbox
+                    else None,
+                )
+
+                try:
+                    recipe = build_recipe(input_options)
+                except MissingVariableError:
+                    continue
+
+                try:
+                    execute_recipe(recipe)
+                except RuntimeError as e:
+                    raise HGANoRetryException(str(e))
+
+                url = stage(
+                    local_filename=str(output_path),
+                    remote_filename=output_path.name,
+                    mime='image/tiff',
+                    location=self.message.stagingLocation,
+                    logger=self.logger,
+                )
+
+                result.assets |= {
+                    variable.fullPath: pystac.Asset(
+                        url, title=output_path.name, media_type=requested_type, roles=['visual']
+                    )
+                }
+
+            if result.assets == {}:
+                raise EmptyOutputError
 
         return result
 
