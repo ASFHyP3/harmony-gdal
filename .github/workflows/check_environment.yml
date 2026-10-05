@@ -15,5 +15,5 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.10.2
       - name: Check Conda Environment Matches
         run: |
-          pixi workspace export conda-environment --from-lock-file > environment.yml
-          git diff --exit-code || (echo "Error: Conda environment does not match Pixi lockfile. Run `pixi workspace export conda-environment --from-lock-file > environment.yml` and commit the changes." && exit 1)
+          pixi workspace export conda-environment -n harmony-gdal-adapter --from-lock-file > environment.yml
+          git diff --exit-code || (echo "Error: Conda environment does not match Pixi lockfile. Run `pixi workspace export conda-environment -n harmony-gdal-adapter --from-lock-file > environment.yml` and commit the changes." && exit 1)
