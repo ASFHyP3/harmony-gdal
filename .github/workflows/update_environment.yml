@@ -3,6 +3,7 @@ name: Update Conda Environment from Pixi
 on:
   push:
     paths: ["pixi.lock"]
+  workflow_dispatch:
 
 permissions:
   contents: write
