@@ -72,13 +72,15 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     collection_shortname=str(source.process('shortName')),
                     output_type='COG',
                     variable_path=source.process('variables')[0].fullPath,
-                    target_srs=self.message.format.process('srs').epsg
-                    if self.message.format and self.message.format.crs
-                    else None,
-                    spatial_extents_bounding_box=self.message.subset.process('bbox')
-                    if self.message.subset and self.message.subset.bbox
-                    else None,
                 )
+
+                match self.message:
+                    case {'format': {'srs': {'epsg': str(epsg)}}}:
+                        input_options.target_srs = epsg
+
+                match self.message:
+                    case {'format': {'subset': {'bbox': list(bounding_box)}}}:
+                        input_options.spatial_extents_bounding_box = bounding_box
 
                 try:
                     recipe = build_recipe(input_options)
