@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.10.2
       - name: Generate environment.yaml from pixi.lock
