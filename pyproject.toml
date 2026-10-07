@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "harmony_gdal_adapter"
-version = "0.1.0"
 readme = "README.md"
 authors = [
     {name="ASF Tools Team", email="UAF-asf-apd@alaska.edu"},
@@ -30,6 +29,7 @@ dependencies = [
     "harmony-service-lib",
     "argparse-dataclass"
 ]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 develop = [
