@@ -52,15 +52,12 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
         granule_url = _get_asset_url(item, '.h5')
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            try:
-                granule_filename = download(
-                    url=granule_url,
-                    destination_dir=temp_dir,
-                    logger=self.logger,
-                    access_token=self.message.accessToken,
-                )
-            except Exception as exception:  # noqa: BLE001
-                raise DownloadError(granule_url, str(exception))
+            granule_filename = download(
+                url=granule_url,
+                destination_dir=temp_dir,
+                logger=self.logger,
+                access_token=self.message.accessToken,
+            )
 
             granule_name = Path(urlparse(granule_url).path).stem
 
