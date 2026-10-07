@@ -79,13 +79,11 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     variable_path=variable.fullPath,
                 )
 
-                match self.message:
-                    case {'format': {'srs': {'epsg': str(epsg)}}}:
-                        input_options.target_srs = epsg
+                if (format := self.message.format) and (srs := format.srs) and (epsg := srs.epsg):
+                    input_options.target_srs = epsg
 
-                match self.message:
-                    case {'format': {'subset': {'bbox': list(bounding_box)}}}:
-                        input_options.spatial_extents_bounding_box = bounding_box
+                if (subset := self.message.subset) and (bounding_box := subset.bbox):
+                    input_options.spatial_extents_bounding_box = bounding_box
 
                 output_filename = generate_output_filename(
                     filename=granule_name,
@@ -95,6 +93,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                 )
                 input_options.output_filename = f'{temp_dir}/{output_filename}'
 
+                self.logger.info(f'Building recipe with the following Input Options: {pformat(input_options)}')
                 recipe = build_recipe(input_options)
                 self.logger.info(f'Running the following GDAL Recipe: {pformat(recipe)}')
 

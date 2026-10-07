@@ -18,7 +18,7 @@ _gdal_options = schema.GdalOptions {
         input_file_path = input_filename
     }
     output_options = schema.GdalOutputOptions {
-        output_type = "COG"
+        output_type = "GTiff"
         output_file_path = output_filename
     }
 }
