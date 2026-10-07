@@ -2,14 +2,18 @@
 
 import argparse
 import tempfile
-from os.path import splitext
+from dataclasses import dataclass
+from os import getenv
 from pathlib import Path
-from urllib.parse import urlparse
+from pprint import pformat
+from urllib.parse import urljoin, urlparse
 
 import harmony_service_lib
 import pystac
+import requests
 from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, stage
+from requests.exceptions import RequestException
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.exceptions import (
@@ -63,15 +67,20 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             result = item.clone()
             result.assets = {}
 
-            for variable in source.process('variables'):
+            variables = source.process('variables') or _get_mmt_variables(
+                str(source.process('collection')), self.message.accessToken
+            )
+
+            for variable in variables:
+                self.logger.info(f'Processing variable: {pformat(variable)}')
                 output_path = Path(f'{temp_dir}/{granule_name}{variable.fullPath.replace("/", "_")}.tif')
 
                 input_options = RecipeInputOptions(
                     input_filename=granule_filename,
                     output_filename=str(output_path),
                     collection_shortname=str(source.process('shortName')),
-                    output_type='COG',
-                    variable_path=source.process('variables')[0].fullPath,
+                    output_type=requested_type,
+                    variable_path=variable.fullPath,
                 )
 
                 match self.message:
@@ -82,15 +91,16 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     case {'format': {'subset': {'bbox': list(bounding_box)}}}:
                         input_options.spatial_extents_bounding_box = bounding_box
 
-                try:
-                    recipe = build_recipe(input_options)
-                except MissingVariableError:
-                    continue
+                recipe = build_recipe(input_options)
+                self.logger.info(f'Running the following GDAL Recipe: {pformat(recipe)}')
 
                 try:
                     execute_recipe(recipe)
                 except RuntimeError as e:
                     raise HGANoRetryException(str(e))
+                except MissingVariableError:
+                    self.logger.info('Variable is not present in source dataset, skipping.')
+                    continue
 
                 url = stage(
                     local_filename=str(output_path),
@@ -100,11 +110,9 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     logger=self.logger,
                 )
 
-                result.assets |= {
-                    variable.fullPath: pystac.Asset(
-                        url, title=output_path.name, media_type=requested_type, roles=['visual']
-                    )
-                }
+                result.assets[variable.fullPath] = pystac.Asset(
+                    url, title=output_path.name, media_type=requested_type, roles=['data']
+                )
 
             if result.assets == {}:
                 raise EmptyOutputError
@@ -117,6 +125,35 @@ def _get_asset_url(item: pystac.Item, suffix: str) -> str:
         return next(asset.href for asset in item.assets.values() if asset.href.endswith(suffix))
     except StopIteration:
         raise HarmonyException(f'No {suffix} asset found for {item.id}')
+
+
+@dataclass
+class _MMTVariable:
+    fullPath: str
+
+
+def _get_mmt_variables(collection_concept_id: str, access_token: str) -> list[_MMTVariable]:
+    cmr_url = getenv('CMR_ENDPOINT') or 'https://cmr.earthdata.nasa.gov'
+    url = urljoin(cmr_url, '/search/variables.umm_json')
+
+    params = {
+        'keyword': collection_concept_id,
+        'page_size': '2000',
+    }
+
+    header_params = {'Authorization': f'Bearer {access_token}', 'Client-Id': 'harmony-gdal-adapter'}
+
+    try:
+        response = requests.get(url, params=params, headers=header_params)
+        response.raise_for_status()
+    except RequestException as e:
+        raise HarmonyException(f'Error while fetching variables from CMR: {e!s}')
+
+    return [
+        _MMTVariable(fullPath=variable['umm']['Name'])
+        for variable in response.json()['items']
+        if collection_concept_id in variable['meta']['associations']['collections']
+    ]
 
 
 def main() -> None:
