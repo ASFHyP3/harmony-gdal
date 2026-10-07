@@ -13,12 +13,10 @@ import pystac
 import requests
 from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, generate_output_filename, stage
-from numpy.f2py.crackfortran import c
 from requests.exceptions import RequestException
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.exceptions import (
-    DownloadError,
     EmptyOutputError,
     HGANoRetryException,
     MissingVariableError,

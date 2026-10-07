@@ -3,7 +3,6 @@
 import json
 from dataclasses import asdict, dataclass, field
 from importlib.resources import files
-from pprint import pprint
 from typing import Literal
 
 import dacite
