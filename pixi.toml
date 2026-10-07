@@ -1,0 +1,23 @@
+[workspace]
+authors = ["Lily Larsen <sglarsen@alaska.edu>"]
+channels = ["conda-forge", "nodefaults"]
+name = "harmony-gdal-adapter"
+platforms = ["linux-64", "osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+test = "pytest ."
+lint = "ruff check . && ruff format --check ."
+
+[dependencies]
+python = ">=3.14"
+pip = "*"
+setuptools_scm = "*"
+numpy = "*"
+gdal = ">=3.13"
+libgdal-hdf5 = "*"
+h5py = "*"
+
+[pypi-dependencies]
+pytest-console-scripts = ">=1.4.1, <2"
+harmony-gdal-adapter = { path = ".", editable = true, extras = ["develop"] }
