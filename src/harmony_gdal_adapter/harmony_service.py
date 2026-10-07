@@ -12,7 +12,8 @@ import harmony_service_lib
 import pystac
 import requests
 from harmony_service_lib.exceptions import HarmonyException
-from harmony_service_lib.util import download, stage
+from harmony_service_lib.util import download, generate_output_filename, stage
+from numpy.f2py.crackfortran import c
 from requests.exceptions import RequestException
 
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
@@ -70,11 +71,9 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
 
             for variable in variables:
                 self.logger.info(f'Processing variable: {pformat(variable)}')
-                output_path = Path(f'{temp_dir}/{granule_name}{variable.fullPath.replace("/", "_")}.tif')
-
                 input_options = RecipeInputOptions(
                     input_filename=granule_filename,
-                    output_filename=str(output_path),
+                    output_filename='',
                     collection_shortname=str(source.process('shortName')),
                     output_type=requested_type,
                     variable_path=variable.fullPath,
@@ -88,6 +87,14 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     case {'format': {'subset': {'bbox': list(bounding_box)}}}:
                         input_options.spatial_extents_bounding_box = bounding_box
 
+                output_filename = generate_output_filename(
+                    filename=granule_name,
+                    variable_subset=[variable.fullPath],
+                    ext='.tif',
+                    is_subsetted=input_options.spatial_extents_bounding_box != None,
+                )
+                input_options.output_filename = f'{temp_dir}/{output_filename}'
+
                 recipe = build_recipe(input_options)
                 self.logger.info(f'Running the following GDAL Recipe: {pformat(recipe)}')
 
@@ -100,15 +107,15 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     continue
 
                 url = stage(
-                    local_filename=str(output_path),
-                    remote_filename=output_path.name,
+                    local_filename=input_options.output_filename,
+                    remote_filename=output_filename,
                     mime='image/tiff',
                     location=self.message.stagingLocation,
                     logger=self.logger,
                 )
 
                 result.assets[variable.fullPath] = pystac.Asset(
-                    url, title=output_path.name, media_type=requested_type, roles=['data']
+                    url, title=output_filename, media_type=requested_type, roles=['data']
                 )
 
             if result.assets == {}:
