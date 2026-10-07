@@ -245,3 +245,6 @@ Sessionx.vim
 tags
 # Persistent undo
 [._]*.un~
+# pixi environments
+.pixi/*
+!.pixi/config.toml
