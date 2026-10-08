@@ -18,7 +18,7 @@ _gdal_options = schema.GdalOptions {
         input_file_path = input_filename
     }
     output_options = schema.GdalOutputOptions {
-        output_type = output_type
+        output_type = "GTiff"
         output_file_path = output_filename
     }
 }
@@ -31,13 +31,11 @@ recipe: schema.Recipe = schema.Recipe {
                 if spatial_extents_wkt:
                     spatial_subset = schema.GdalWarpCutlineSpatialSubset {
                         cutline_wkt = spatial_extents_wkt
-                        cutline_srs = "EPSG:4326"
                         crop_to_cutline = True
                     }
                 elif spatial_extents_bounding_box:
                     spatial_subset = schema.GdalWarpBoundsSpatialSubset {
                         output_bounds = spatial_extents_bounding_box
-                        output_bounds_srs = "EPSG:4326"
                     }
                 if target_srs:
                     target_srs = target_srs
