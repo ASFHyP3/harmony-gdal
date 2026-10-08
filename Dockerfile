@@ -1,8 +1,9 @@
 FROM mambaorg/micromamba:latest
-
 WORKDIR /home/mambauser
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER . /harmony-gdal-adapter/
+
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=1.0.0
 
 RUN micromamba install -y -n base -f /harmony-gdal-adapter/environment.yml && \
 	micromamba install -y -n base git && \
