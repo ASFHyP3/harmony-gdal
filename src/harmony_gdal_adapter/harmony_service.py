@@ -87,7 +87,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     filename=granule_name,
                     variable_subset=[variable.fullPath],
                     ext='.tif',
-                    is_subsetted=input_options.spatial_extents_bounding_box != None,
+                    is_subsetted=input_options.spatial_extents_bounding_box is not None,
                 )
                 input_options.output_filename = f'{temp_dir}/{output_filename}'
 
