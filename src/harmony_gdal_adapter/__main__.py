@@ -7,7 +7,7 @@ from harmony_gdal_adapter.gdal import execute_recipe
 
 
 def run_cli() -> None:
-    """Run CLI."""
+    """Run the HGA CLI."""
     parser = ArgumentParser(RecipeInputOptions)
     options = parser.parse_args()
 

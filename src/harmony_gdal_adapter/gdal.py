@@ -14,7 +14,7 @@ from harmony_gdal_adapter.build_recipes import (
     GdalWarpRecipe,
     Recipe,
 )
-from harmony_gdal_adapter.exceptions import InvalidProjectionError, MissingVariableError
+from harmony_gdal_adapter.exceptions import MissingVariableError, UnsupportedProjectionError
 
 
 class _WarpOptions(TypedDict, total=False):
@@ -41,9 +41,9 @@ def _validate_input_string(input_string: str, recipe: Recipe) -> None:
         f'{input_options.virtual_filesystem or ""}{input_options.input_file_path}',
         allowed_drivers=[input_options.driver],
     )
-    truth_input_strings = [dataset[0] for dataset in truth_file.GetSubDatasets()]
+    valid_input_strings = [dataset[0] for dataset in truth_file.GetSubDatasets()]
 
-    if input_string not in truth_input_strings:
+    if input_string not in valid_input_strings:
         raise MissingVariableError(input_options.dataset_path)
 
 
@@ -54,7 +54,7 @@ def _validate_srs(srs: str) -> None:
         valid_codes += f'EPSG:{code}'
 
     if srs not in valid_codes:
-        raise InvalidProjectionError(srs)
+        raise UnsupportedProjectionError(srs)
 
 
 def _validate_recipe_input(recipe: Recipe) -> None:

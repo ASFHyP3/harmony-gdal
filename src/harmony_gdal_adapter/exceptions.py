@@ -46,7 +46,7 @@ class DownloadError(HarmonyException):
 
 
 class UnsupportedFileFormatError(HGANoRetryException):
-    """Raised when the input file format is cannot processed by the HGA."""
+    """Raised when the output file format is not supported by HGA."""
 
     def __init__(self, file_format: str) -> None:
         """Initialize a new UnsupportedFileFormatError instance.
@@ -69,8 +69,8 @@ class MissingVariableError(HGANoRetryException):
         super().__init__(f'Missing variable in input file: {requested_variable}. ')
 
 
-class InvalidProjectionError(HGANoRetryException):
-    """Raised when the requested output projection is invalid."""
+class UnsupportedProjectionError(HGANoRetryException):
+    """Raised when the requested output projection is unsupported."""
 
     def __init__(self, requested_projection: str) -> None:
         """Initialize a new InvalidProjectionError instance.
@@ -78,7 +78,7 @@ class InvalidProjectionError(HGANoRetryException):
         Args:
             requested_projection (str): The requested projection as a string.
         """
-        super().__init__(f'Requested projection is invalid: {requested_projection}')
+        super().__init__(f'Requested projection is unsupported: {requested_projection}.')
 
 
 class InputValidationError(HGANoRetryException):
@@ -91,3 +91,11 @@ class InputValidationError(HGANoRetryException):
             error (str): The JSON data given by the error.
         """
         super().__init__(f'{error}')
+
+
+class EmptyOutputError(HGANoRetryException):
+    """Raised when none of the input variables are present."""
+
+    def __init__(self) -> None:
+        """Initialize a new EmptyOutputError."""
+        super().__init__('None of the requested variables are present in the source file.')
