@@ -8,6 +8,7 @@ version = "0.1.0"
 [tasks]
 test = "pytest ."
 lint = "ruff check . && ruff format --check ."
+harmony = "python -m harmony_gdal_adapter.harmony_service"
 
 [dependencies]
 python = ">=3.14"
