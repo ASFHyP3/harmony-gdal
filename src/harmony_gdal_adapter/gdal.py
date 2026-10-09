@@ -51,7 +51,7 @@ def _validate_srs(srs: str) -> None:
     valid_codes = ['EPSG:4326', 'EPSG:3031', 'EPSG:3413', 'EPSG:3412']
 
     for code in chain(range(32601, 32661), range(32701, 32761)):
-        valid_codes += [f'EPSG:{code}']
+        valid_codes.append(f'EPSG:{code}')
 
     if srs not in valid_codes:
         raise UnsupportedProjectionError(srs)
