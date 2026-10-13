@@ -1,5 +1,25 @@
 # Harmony GDAL Adapter
 
+The Harmony GDAL Adapter service is a Harmony service which allows the use of the [GDAL Translate](https://gdal.org/en/stable/programs/gdal_translate.html) and [Warp](https://gdal.org/en/stable/programs/gdalwarp.html) utilities in Harmony. It parses and executes declarative recipes which describe GDAL Translate or Warp operations to perform subsetting, reprojection, and variable extraction. These recipes are written in the [KCL](https://www.kcl-lang.io/) domain specific language.
+
+> [!IMPORTANT]
+> Currently the Harmony GDAL Adapter is in early development status and only supports NISAR data.
+
+## Why KCL?
+
+Harmony services represent data transformations. The code of these services should place the emphasis on _what_ happens to the data, rather than the steps taken to get to the desired end result. Most programming languages are imperative, forcing you to describe the steps to transform the data to achieve the end result, instead of the actual end result you want to achieve.
+
+GDAL operations are (for the most part) declarative, you define the input data you want to use, and you define what you want the output format to look like. However, we still need to build the GDAL operation configuration from the users request. Doing this in an imperative language like Python requires splitting up and hiding the description of a GDAL operation inside of control flow logic. Instead this codebase defines GDAL operation configurations in KCL, a declarative language. This allows us to invert the typical structure of code by placing control flow logic inside of the description of a GDAL operation.
+
+Using KCL simplifies the parsing of the final configuration of GDAL operation for a given harmony request as the developer sees the description of the GDAL operation as one whole piece of structured data. We use Python to interpret and carry out the description which is held by KCL. First Python takes the inputs from harmony and formats them for the KCL recipe. The KCL recipe takes these inputs and translates them into the appropriate GDAL operation. Finally Python parses and executes this operation.
+
+The secondary benefits of KCL is that KCL has very strong type checking and input validation. This allows us to provide static type checking for KCL recipes which cuts down greatly on the number of bugs and errors which are discovered in the testing and deployment phases of development. Further, it leads to a very strong description of the API which is used to communicate between Python and KCL. Due to this, KCL recipes are modular, allowing Python to select the most suitable recipe for each collection.
+
+## How do I add support for a dataset or CMR collection in the Harmony GDAL Adapter?
+
+> [!IMPORTANT]
+> We have not added the functionality of defining which recipes relate to which collections. Once that functionality has been added, this section will be update to reflect how you can create your own KCL recipe similar to [src/harmony_gdal_adapter/recipes/nisar.k](src/harmony_gdal_adapter/recipes/nisar.k) and register it with your associated CMR collections in [src/harmony_gdal_adapter/recipes/recipes.k](src/harmony_gdal_adapter/recipes/recipes.k).
+
 ## Developer setup
 
 This project uses [Pixi](https://pixi.prefix.dev/latest/) for dependency management. To get started run:
