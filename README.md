@@ -18,7 +18,7 @@ The secondary benefits of KCL is that KCL has very strong type checking and inpu
 ## How do I add support for a dataset or CMR collection in the Harmony GDAL Adapter?
 
 > [!IMPORTANT]
-> For now, we have not added the functionality of defining which recipes relate to which collections. Once that functionality has been added, this section will be update to reflect how you can create your own KCL recipe similar to [src/harmony_gdal_adapter/recipes/nisar.k](src/harmony_gdal_adapter/recipes/nisar.k), register it with your associated CMR collections in [src/harmony_gdal_adapter/recipes/recipes.k](src/harmony_gdal_adapter/recipes/recipes.k), and then register the associated CMR collections with the Harmony GDAL Adapter service in UMM.
+> We have not added the functionality of defining which recipes relate to which collections. Once that functionality has been added, this section will be update to reflect how you can create your own KCL recipe similar to [src/harmony_gdal_adapter/recipes/nisar.k](src/harmony_gdal_adapter/recipes/nisar.k), register it with your associated CMR collections in [src/harmony_gdal_adapter/recipes/recipes.k](src/harmony_gdal_adapter/recipes/recipes.k), and then register the associated CMR collections with the Harmony GDAL Adapter service in UMM.
 
 ## Developer setup
 
