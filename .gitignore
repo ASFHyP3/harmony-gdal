@@ -55,6 +55,10 @@ coverage.xml
 .pytest_cache/
 cover/
 
+#pytest outputs
+./.pytest_tmp
+/tests/data/output_*.tif
+
 # Translations
 *.mo
 *.pot
@@ -149,6 +153,7 @@ static
 #### jetbrains ####
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+.idea
 
 # User-specific stuff
 .idea/**/workspace.xml
@@ -240,3 +245,6 @@ Sessionx.vim
 tags
 # Persistent undo
 [._]*.un~
+# pixi environments
+.pixi/*
+!.pixi/config.toml

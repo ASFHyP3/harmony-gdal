@@ -3,15 +3,15 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   call-release-workflow:
     # Docs: https://github.com/ASFHyP3/actions
-    uses: ASFHyP3/actions/.github/workflows/reusable-release.yml@v0.21.0
+    uses: ASFHyP3/actions/.github/workflows/reusable-release.yml@v0.22.0
     permissions: {}
     with:
-      release_prefix: nisar-py
+      release_prefix: harmony-gdal-adapter
       release_branch: main
       develop_branch: develop
     secrets:
