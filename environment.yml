@@ -142,7 +142,7 @@ dependencies:
   - kcl-lib==0.13.0
   - boto3==1.43.108
   - mypy-extensions==1.1.0
-  - botocore==1.43.108
+  - botocore==1.43.111
   - pystac-ext-mgrs==1.0.1
   - pystac-ext-pointcloud==1.0.1
   - pystac-ext-sat==1.0.1
