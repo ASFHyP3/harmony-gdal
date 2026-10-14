@@ -123,7 +123,7 @@ dependencies:
   - pystac-ext-timestamps==1.1.1
   - pytest-console-scripts==1.4.1
   - pystac==1.15.2
-  - python-json-logger==2.0.7
+  - python-json-logger==4.2.0
   - pynacl==1.6.2
   - xarray==2026.9.0
   - librt==0.16.0
