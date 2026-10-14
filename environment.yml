@@ -163,7 +163,7 @@ dependencies:
   - ast-serialize==0.12.1
   - pystac-core==1.15.2
   - pandas==3.0.6
-  - iniconfig==2.3.0
+  - iniconfig==2.3.1
   - pystac-ext-raster==1.1.1
   - pystac-ext-mlm==1.4.1
   - protobuf==7.36.2
