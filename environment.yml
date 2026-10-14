@@ -113,7 +113,7 @@ dependencies:
   - -e ./
   - deprecation==2.1.0
   - certifi==2026.7.22
-  - pycparser==3.0
+  - pycparser==3.11
   - pystac-ext-datacube==2.2.1
   - jmespath==1.1.0
   - charset-normalizer==3.5.2
