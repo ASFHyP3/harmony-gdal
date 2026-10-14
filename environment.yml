@@ -167,7 +167,7 @@ dependencies:
   - pystac-ext-raster==1.1.1
   - pystac-ext-mlm==1.4.1
   - protobuf==7.36.2
-  - ruff==0.16.10
+  - ruff==0.17.0
   - cffi==2.1.1
   - pystac-ext-file==2.1.1
   - python-dateutil==2.9.0.post0
