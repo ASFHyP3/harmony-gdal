@@ -61,6 +61,7 @@ class GdalOutputOptions:
 
     output_type: Literal['GTiff', 'COG']
     output_file_path: str = 'output'
+    write_options_as_metadata: bool = True
 
 
 @dataclass

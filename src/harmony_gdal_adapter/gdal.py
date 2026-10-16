@@ -1,5 +1,6 @@
 """Execute GDAL recipes."""
 
+import json
 from itertools import chain
 from typing import TypedDict
 
@@ -17,7 +18,7 @@ from harmony_gdal_adapter.build_recipes import (
 from harmony_gdal_adapter.exceptions import MissingVariableError, UnsupportedProjectionError
 
 
-class _WarpOptions(TypedDict, total=False):
+class _GdalOptions(TypedDict, total=False):
     format: str | None
     dstSRS: str | None
     srcSRS: str | None
@@ -33,6 +34,7 @@ class _WarpOptions(TypedDict, total=False):
     cutlineSQL: str | None
     cutlineBlend: int | None
     cropToCutline: bool | None
+    metadataOptions: dict | None
 
 
 def _validate_input_string(input_string: str, recipe: Recipe) -> None:
@@ -93,6 +95,9 @@ def _execute_gdal_translate_recipe(source_dataset: str, destination_name: str, r
     translate_options = _build_gdal_translate_options(recipe)
     Translate(destination_name, source_dataset, **translate_options)
 
+    if recipe.gdal_options.output_options.write_options_as_metadata:
+        _set_gdal_metadata_options(translate_options, recipe)
+
 
 def _execute_gdal_warp_recipe(source_dataset: str, destination_name: str, recipe: GdalWarpRecipe) -> None:
     if isinstance(recipe.warp_options.spatial_subset, GdalWarpBoundsSpatialSubset):
@@ -103,6 +108,9 @@ def _execute_gdal_warp_recipe(source_dataset: str, destination_name: str, recipe
         recipe = _clip_spatial_extents(recipe)
     warp_options = _build_gdal_warp_options(recipe)
     Warp(destination_name, source_dataset, **warp_options)
+
+    if recipe.gdal_options.output_options.write_options_as_metadata:
+        _set_gdal_metadata_options(warp_options, recipe)
 
 
 def _build_input_string(recipe: Recipe) -> str:
@@ -117,17 +125,18 @@ def _build_output_string(recipe: Recipe) -> str:
     return str(output_options.output_file_path)
 
 
-def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> _WarpOptions:
+def _build_gdal_translate_options(recipe: GdalTranslateRecipe) -> _GdalOptions:
     translate_options = _build_gdal_output_options(recipe.gdal_options.output_options)
+
     return translate_options
 
 
-def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
+def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _GdalOptions:
     input_warp_options = recipe.warp_options
 
     warp_options = _build_gdal_output_options(recipe.gdal_options.output_options)
 
-    warp_options |= _WarpOptions(
+    warp_options |= _GdalOptions(
         dstSRS=input_warp_options.target_srs,
         srcSRS=input_warp_options.source_srs,
         srcAlpha=input_warp_options.src_alpha,
@@ -139,11 +148,11 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
     if spatial_subset := input_warp_options.spatial_subset:
         match spatial_subset:
             case GdalWarpBoundsSpatialSubset() as bounds:
-                warp_options |= _WarpOptions(
+                warp_options |= _GdalOptions(
                     outputBounds=bounds.output_bounds, outputBoundsSRS=bounds.output_bounds_srs
                 )
             case GdalWarpCutlineSpatialSubset() as cutline:
-                warp_options |= _WarpOptions(
+                warp_options |= _GdalOptions(
                     cutlineWKT=cutline.cutline_wkt,
                     cutlineSRS=cutline.cutline_srs,
                     cutlineWhere=cutline.cutline_where,
@@ -155,9 +164,30 @@ def _build_gdal_warp_options(recipe: GdalWarpRecipe) -> _WarpOptions:
     return warp_options
 
 
-def _build_gdal_output_options(output_options: GdalOutputOptions) -> _WarpOptions:
+def _set_gdal_metadata_options(options: _GdalOptions, recipe: GdalWarpRecipe | GdalTranslateRecipe) -> None:
+    metadata = {
+        'GDAL_VERSION': gdal.VersionInfo('RELEASE_NAME'),
+        'GDAL_INPUT_DRIVER': recipe.gdal_options.input_options.driver,
+        'GDAL_INPUT_FILE': recipe.gdal_options.input_options.input_file_path,
+        'GDAL_INPUT_VARIABLE': recipe.gdal_options.input_options.dataset_path,
+        'GDAL_SOURCE_DATASET': _build_input_string(Recipe(recipe)),
+        'GDAL_OPTIONS': json.dumps(options),
+    }
+
+    match recipe:
+        case GdalWarpRecipe():
+            metadata |= {'GDAL_OPERATION': 'WARP'}
+        case GdalTranslateRecipe():
+            metadata |= {'GDAL_OPERATION': 'TRANSLATE'}
+
+    ds = gdal.Open(recipe.gdal_options.output_options.output_file_path, gdal.GA_Update)
+    ds.SetMetadata(metadata)
+    ds = None
+
+
+def _build_gdal_output_options(output_options: GdalOutputOptions) -> _GdalOptions:
     """Build gdalOptions dictionary."""
-    gdal_output_options = _WarpOptions()
+    gdal_output_options = _GdalOptions()
     gdal_output_options['format'] = output_options.output_type
     return gdal_output_options
 

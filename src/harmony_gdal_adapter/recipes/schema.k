@@ -55,6 +55,7 @@ schema GdalOutputOptions:
     """
     output_type: "GTiff" | "COG" = "GTiff"
     output_file_path: str = "output"
+    write_options_as_metadata: bool = True
 
 schema GdalWarpOptions:
     """GdalWarpOptions specifies the GDAL options specific to Warp operations.
