@@ -1,3 +1,9 @@
+## [0.1.0]
+
+### Changed
+
+- Updated dependencies
+
 ## [0.0.1]
 
 ### Added
