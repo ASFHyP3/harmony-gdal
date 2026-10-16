@@ -2,6 +2,7 @@
 
 import json
 from itertools import chain
+from pathlib import Path
 from typing import TypedDict
 
 from osgeo import gdal, ogr, osr
@@ -168,9 +169,8 @@ def _set_gdal_metadata_options(options: _GdalOptions, recipe: GdalWarpRecipe | G
     metadata = {
         'GDAL_VERSION': gdal.VersionInfo('RELEASE_NAME'),
         'GDAL_INPUT_DRIVER': recipe.gdal_options.input_options.driver,
-        'GDAL_INPUT_FILE': recipe.gdal_options.input_options.input_file_path,
+        'GDAL_INPUT_FILE': Path(recipe.gdal_options.input_options.input_file_path).name,
         'GDAL_INPUT_VARIABLE': recipe.gdal_options.input_options.dataset_path,
-        'GDAL_SOURCE_DATASET': _build_input_string(Recipe(recipe)),
         'GDAL_OPTIONS': json.dumps(options),
     }
 
