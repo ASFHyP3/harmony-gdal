@@ -21,7 +21,7 @@ classifiers=[
 dependencies = [
     "gdal",
     "pystac",
-    "kcl-lib == 0.13.1",
+    "kcl-lib",
     "dacite",
     "harmony-service-lib",
     "argparse-dataclass"
