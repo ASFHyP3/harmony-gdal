@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from os import getenv
 from pathlib import Path
 from pprint import pformat
+from typing import Any
 from urllib.parse import urljoin, urlparse
 
 import harmony_service_lib
@@ -73,7 +74,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             result = item.clone()
             result.assets = {}
 
-            variables = [None]
+            variables: Any | list[_MMTVariable | None] = [None]
 
             if recipe_metadata.supported_operations.variable_subset:
                 variables = source.process('variables') or _get_mmt_variables(
