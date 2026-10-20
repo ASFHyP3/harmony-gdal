@@ -2,9 +2,6 @@
 
 The Harmony GDAL Adapter service is a Harmony service which allows the use of the [GDAL Translate](https://gdal.org/en/stable/programs/gdal_translate.html) and [Warp](https://gdal.org/en/stable/programs/gdalwarp.html) utilities in Harmony. It parses and executes declarative recipes which describe GDAL Translate or Warp operations to perform subsetting, reprojection, and variable extraction. These recipes are written in the [KCL](https://www.kcl-lang.io/) domain specific language.
 
-> [!IMPORTANT]
-> Currently the Harmony GDAL Adapter is in early development status and only supports NISAR data.
-
 ## Why KCL?
 
 Harmony services represent data transformations. The code of these services should place the emphasis on _what_ happens to the data, rather than the steps taken to get to the desired end result. Most programming languages are imperative, forcing you to describe the steps to transform the data to achieve the end result, instead of the actual end result you want to achieve.

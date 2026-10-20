@@ -3,6 +3,7 @@
 import argparse
 import tempfile
 from dataclasses import dataclass
+from gc import collect
 from os import getenv
 from pathlib import Path
 from pprint import pformat
@@ -11,15 +12,17 @@ from urllib.parse import urljoin, urlparse
 import harmony_service_lib
 import pystac
 import requests
+from boto3.resources.params import re
 from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, generate_output_filename, stage
 from requests.exceptions import RequestException
 
-from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
+from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe, get_suitable_recipe
 from harmony_gdal_adapter.exceptions import (
     EmptyOutputError,
     HGANoRetryException,
     MissingVariableError,
+    UnsupportedCollectionError,
     UnsupportedFileFormatError,
 )
 from harmony_gdal_adapter.gdal import execute_recipe
@@ -48,7 +51,14 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
 
         self.logger.info(f'Processing item {item.id}')
 
-        granule_url = _get_asset_url(item, '.h5')
+        collection_short_name = str(source.process('shortName'))
+
+        recipe_metadata = get_suitable_recipe(collection_short_name)
+
+        if recipe_metadata is None:
+            raise UnsupportedCollectionError(collection_short_name)
+
+        granule_url = _get_asset_url(item, recipe_metadata.file_match_pattern)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             granule_filename = download(
@@ -70,9 +80,10 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             for variable in variables:
                 self.logger.info(f'Processing variable: {pformat(variable)}')
                 input_options = RecipeInputOptions(
+                    recipe_path=recipe_metadata.path,
                     input_filename=granule_filename,
                     output_filename='',
-                    collection_shortname=str(source.process('shortName')),
+                    collection_shortname=collection_short_name,
                     output_type=requested_type,
                     variable_path=variable.fullPath,
                 )
@@ -121,11 +132,11 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
         return result
 
 
-def _get_asset_url(item: pystac.Item, suffix: str) -> str:
+def _get_asset_url(item: pystac.Item, pattern: str) -> str:
     try:
-        return next(asset.href for asset in item.assets.values() if asset.href.endswith(suffix))
+        return next(asset.href for asset in item.assets.values() if re.search(pattern, asset.href))
     except StopIteration:
-        raise HarmonyException(f'No {suffix} asset found for {item.id}')
+        raise HarmonyException(f'No asset found for {item.id} which matches {pattern}')
 
 
 @dataclass

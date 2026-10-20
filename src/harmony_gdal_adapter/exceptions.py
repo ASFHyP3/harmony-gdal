@@ -81,6 +81,18 @@ class UnsupportedProjectionError(HGANoRetryException):
         super().__init__(f'Requested projection is unsupported: {requested_projection}.')
 
 
+class UnsupportedCollectionError(HGANoRetryException):
+    """Raised when the requested collection shortname does not map to any recipes."""
+
+    def __init__(self, collection_shortname: str) -> None:
+        """Initialize a new UnsupportedCollectionError instance.
+
+        Args:
+            collection_shortname (str): The collection shortname as a string.
+        """
+        super().__init__(f'Requested collection is unsupported: {collection_shortname}.')
+
+
 class InputValidationError(HGANoRetryException):
     """Raised when the KCL recipe fails."""
 

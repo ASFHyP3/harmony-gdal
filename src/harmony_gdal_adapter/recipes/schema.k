@@ -1,3 +1,8 @@
+schema RecipeMetadata:
+    path: str
+    file_match_pattern: str
+    accepted_collection_shortnames: [str]
+
 schema Recipe:
     inner: GdalWarpRecipe | GdalTranslateRecipe
 
