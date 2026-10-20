@@ -3,7 +3,6 @@
 import argparse
 import tempfile
 from dataclasses import dataclass
-from gc import collect
 from os import getenv
 from pathlib import Path
 from pprint import pformat
@@ -24,6 +23,7 @@ from harmony_gdal_adapter.exceptions import (
     MissingVariableError,
     UnsupportedCollectionError,
     UnsupportedFileFormatError,
+    UnsupportedOperationError,
 )
 from harmony_gdal_adapter.gdal import execute_recipe
 
@@ -73,9 +73,12 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
             result = item.clone()
             result.assets = {}
 
-            variables = source.process('variables') or _get_mmt_variables(
-                str(source.process('collection')), self.message.accessToken
-            )
+            variables = [None]
+
+            if recipe_metadata.supported_operations.variable_subset:
+                variables = source.process('variables') or _get_mmt_variables(
+                    str(source.process('collection')), self.message.accessToken
+                )
 
             for variable in variables:
                 self.logger.info(f'Processing variable: {pformat(variable)}')
@@ -85,18 +88,24 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     output_filename='',
                     collection_shortname=collection_short_name,
                     output_type=requested_type,
-                    variable_path=variable.fullPath,
+                    variable_path=variable.fullPath if variable else None,
                 )
 
                 if (format := self.message.format) and (srs := format.srs) and (epsg := srs.epsg):
-                    input_options.target_srs = epsg
+                    if recipe_metadata.supported_operations.reproject:
+                        input_options.target_srs = epsg
+                    else:
+                        raise UnsupportedOperationError('reprojection')
 
                 if (subset := self.message.subset) and (bounding_box := subset.bbox):
-                    input_options.spatial_extents_bounding_box = bounding_box
+                    if recipe_metadata.supported_operations.spatial_subset:
+                        input_options.spatial_extents_bounding_box = bounding_box
+                    else:
+                        raise UnsupportedOperationError('spatial subsetting')
 
                 output_filename = generate_output_filename(
                     filename=granule_name,
-                    variable_subset=[variable.fullPath],
+                    variable_subset=[variable.fullPath] if variable else [],
                     ext='.tif',
                     is_subsetted=input_options.spatial_extents_bounding_box is not None,
                 )
@@ -122,7 +131,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     logger=self.logger,
                 )
 
-                result.assets[variable.fullPath] = pystac.Asset(
+                result.assets[variable.fullPath if variable else granule_name] = pystac.Asset(
                     url, title=output_filename, media_type=requested_type, roles=['data']
                 )
 

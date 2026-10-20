@@ -1,7 +1,19 @@
 schema RecipeMetadata:
     path: str
     file_match_pattern: str
+    supported_operations: SupportedOperations
     accepted_collection_shortnames: [str]
+
+schema SupportedOperations:
+    variable_subset: bool
+    spatial_subset: bool
+    reproject: bool
+
+allSupportedOperations = {
+    variable_subset = True
+    spatial_subset = True
+    reproject = True
+}
 
 schema Recipe:
     inner: GdalWarpRecipe | GdalTranslateRecipe

@@ -4,6 +4,7 @@ recipes = [
         schema.RecipeMetadata {
                 path = "nisar.k"
                 file_match_pattern = "\.h5$"
+                supported_operations = schema.allSupportedOperations
                 accepted_collection_shortnames = [
                        "NISAR_L3_SME2_PROVISIONAL_V1"
                        "NISAR_L2_GUNW_PROVISIONAL_V1"
