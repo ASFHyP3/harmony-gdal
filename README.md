@@ -2,9 +2,6 @@
 
 The Harmony GDAL Adapter service is a Harmony service which allows the use of the [GDAL Translate](https://gdal.org/en/stable/programs/gdal_translate.html) and [Warp](https://gdal.org/en/stable/programs/gdalwarp.html) utilities in Harmony. It parses and executes declarative recipes which describe GDAL Translate or Warp operations to perform subsetting, reprojection, and variable extraction. These recipes are written in the [KCL](https://www.kcl-lang.io/) domain specific language.
 
-> [!IMPORTANT]
-> Currently the Harmony GDAL Adapter is in early development status and only supports NISAR data.
-
 ## Why KCL?
 
 Harmony services represent data transformations. The code of these services should place the emphasis on _what_ happens to the data, rather than the steps taken to get to the desired end result. Most programming languages are imperative, forcing you to describe the steps to transform the data to achieve the end result, instead of the actual end result you want to achieve.
@@ -17,8 +14,9 @@ The secondary benefits of KCL is that KCL has very strong type checking and inpu
 
 ## How do I add support for a dataset or CMR collection in the Harmony GDAL Adapter?
 
-> [!IMPORTANT]
-> We have not added the functionality of defining which recipes relate to which collections. Once that functionality has been added, this section will be update to reflect how you can create your own KCL recipe similar to [src/harmony_gdal_adapter/recipes/nisar.k](src/harmony_gdal_adapter/recipes/nisar.k) and register it with your associated CMR collections in [src/harmony_gdal_adapter/recipes/recipes.k](src/harmony_gdal_adapter/recipes/recipes.k).
+First create a KCL file in `src/harmony_gdal_adapter/recipes/` named after your collection. See `src/harmony_gdal_adapter/recipes/nisar.k` for an example and `src/harmony_gdal_adapter/recipes/schema.k` for a detailed schema with docstrings describing how to populate your KCL file. Then, register your KCL file to the collections you wish to associate it with in `src/harmony_gdal_adapter/recipes/recipes.k` and make sure to set file match patterns to be a regex pattern which matches the science data asset from Earthdata cloud. Then, install the [kcl cli](https://github.com/kcl-lang/cli) and run `kcl lint` and `kcl fmt` to lint and format your edited files. Then, validate your new recipes against a local harmony-in-a-box instance or the [HGA Cli](harmony-gdal-adapter-cli). Once you have linted, formatted, and validated your recipe, open a PR to have your recipes merged with the specific collection IDs you would like your service to be associated with. After support has been added for your collection in the Harmony GDAL Adapter we will also have to support your collection in harmony by adding harmony regression test cases, and associating the Harmony GDAL Adapter with the appropriate collections in MMT.
+
+If you cannot accomplish implementing support for a given dataset or collection using only recipes, please open an issue describing what you are attempting to do, we will discuss the appropriate additions to the recipes API and then implement it. The Harmony GDAL Adapter is in early development so it is likely that you will need to have a feature added for your dataset or collection.
 
 ## Developer setup
 
@@ -53,20 +51,20 @@ pixi workspace export conda-environment -n harmony-gdal-adapter --from-lock-file
 
 You can use the local development testing cli by running `hga` in the harmony-gdal-adapter environment.
 
-For example to perform a simple dataset extraction to geotiff:
+For example to perform a simple dataset extraction to geotiff on NISAR data:
 
 ```bash
-hga --input-filename "NISAR_L2_PR_GCOV_005_149_A_024_4005_DHDH_A_20251120T123755_20251120T123830_X05009_N_F_J_001.h5" --collection-shortname "foobar" --output-type GTiff --output-filename output.tif --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH"
+hga --recipe-path "nisar.k" --input-filename "NISAR_L2_PR_GCOV_005_149_A_024_4005_DHDH_A_20251120T123755_20251120T123830_X05009_N_F_J_001.h5" --collection-shortname "foobar" --output-type GTiff --output-filename output.tif --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH"
 ```
 
 To perform a spatial subsetting operation:
 
 ```bash
-hga --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output_cropped.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --spatial-extents "POLYGON((-125.1989 49.2151,-125.1461 49.2151,-125.1461 49.2583,-125.1989 49.2583,-125.1989 49.2151))"
+hga --recipe-path "nisar.k" --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output_cropped.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --spatial-extents "POLYGON((-125.1989 49.2151,-125.1461 49.2151,-125.1461 49.2583,-125.1989 49.2583,-125.1989 49.2151))"
 ```
 
 To perform a reprojection operation:
 
-```
-hga --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --target-srs EPSG:32602
+```bash
+hga "--recipe-path "nisar.k" --input-filename NISAR_L2_PR_GCOV_030_106_A_027_4005_DHDH_A_20260913T130434_20260913T130510_P05023_N_F_J_001.h5 --collection-shortname "foobar" --output-type GTiff --output-filename "output.tif" --variable-path "//science/LSAR/GCOV/grids/frequencyB/HHHH" --target-srs EPSG:32602
 ```

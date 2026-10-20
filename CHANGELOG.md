@@ -1,3 +1,9 @@
+## [0.1.0]
+
+### Added
+
+- The Ability for arbitrary recipes to be registered and associated with collection shortnames.
+
 ## [0.0.1]
 
 ### Added

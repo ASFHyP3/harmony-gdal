@@ -73,12 +73,36 @@ class UnsupportedProjectionError(HGANoRetryException):
     """Raised when the requested output projection is unsupported."""
 
     def __init__(self, requested_projection: str) -> None:
-        """Initialize a new InvalidProjectionError instance.
+        """Initialize a new UnsupportedProjectionError instance.
 
         Args:
             requested_projection (str): The requested projection as a string.
         """
         super().__init__(f'Requested projection is unsupported: {requested_projection}.')
+
+
+class UnsupportedCollectionError(HGANoRetryException):
+    """Raised when the requested collection shortname does not map to any recipes."""
+
+    def __init__(self, collection_shortname: str) -> None:
+        """Initialize a new UnsupportedCollectionError instance.
+
+        Args:
+            collection_shortname (str): The collection shortname as a string.
+        """
+        super().__init__(f'Requested collection is unsupported: {collection_shortname}.')
+
+
+class UnsupportedOperationError(HGANoRetryException):
+    """Raised when the requested operation is not supported by the current recipe."""
+
+    def __init__(self, operation: str) -> None:
+        """Initialize a new UnsupportedOperationError instance.
+
+        Args:
+            operation (str): The unsupported operation as a string. Ex: "reprojection", "spatial subsetting".
+        """
+        super().__init__(f'Requested collection is unsupported: {operation}.')
 
 
 class InputValidationError(HGANoRetryException):

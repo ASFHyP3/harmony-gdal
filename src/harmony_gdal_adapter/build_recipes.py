@@ -12,14 +12,34 @@ from harmony_gdal_adapter.exceptions import InputValidationError
 
 
 @dataclass
+class SupportedOperations:
+    """The operations a given recipe supports."""
+
+    variable_subset: bool
+    spatial_subset: bool
+    reproject: bool
+
+
+@dataclass
+class RecipeMetadata:
+    """Recipe metadata used to select a suitable recipe."""
+
+    path: str
+    file_match_pattern: str
+    supported_operations: SupportedOperations
+    accepted_collection_shortnames: list[str]
+
+
+@dataclass
 class RecipeInputOptions:
     """Input options used by recipes."""
 
+    recipe_path: str
     collection_shortname: str
     input_filename: str
     output_type: str
     output_filename: str
-    variable_path: str
+    variable_path: str | None
     spatial_extents_bounding_box: list[float] | None = field(metadata={'type': float, 'nargs': 4}, default=None)
     target_srs: str | None = None
     spatial_extents_wkt: str | None = None
@@ -213,20 +233,52 @@ class Recipe:
     inner: GdalWarpRecipe | GdalTranslateRecipe
 
 
+def get_suitable_recipe(collection_short_name: str) -> RecipeMetadata | None:
+    """Gets the correct recipe for building from the recipes.k recipe metadata file and returns the metadata for that recipe.
+
+    Args:
+        collection_short_name (str): The collection shortname of the granule
+
+    Returns:
+        RecipeMetadata: The metadata for the recipe to run
+    """
+    api = kcl.API()
+    result = api.exec_program(
+        kcl.ExecProgramArgs(k_filename_list=[str(files(__package__).joinpath('recipes/recipes.k'))])
+    )
+    if result.err_message:
+        raise InputValidationError(result.err_message)
+
+    metadata_dicts = json.loads(result.json_result)['recipes']
+    metadatas = [
+        dacite.from_dict(data_class=RecipeMetadata, data=metadata_dict, config=dacite.Config(strict=True))
+        for metadata_dict in metadata_dicts
+    ]
+
+    for metadata in metadatas:
+        if collection_short_name in metadata.accepted_collection_shortnames:
+            return metadata
+
+    return None
+
+
 def build_recipe(options: RecipeInputOptions) -> Recipe:
     """Builds a Recipe for execution from the nisar.k recipe file with the given recipe input options.
 
     Args:
-        options (RecipeInputOptions): the input options for the recipe file
+        options (RecipeInputOptions): The input options for the recipe file
+        recipe_path (str): The recipe to run, relative to the recipes folder
 
     Returns:
         Recipe: The built recipe from the input options
     """
     recipe_args = [
-        kcl.Argument(name=name, value=str(value)) for name, value in asdict(options).items() if value is not None
+        kcl.Argument(name=name, value=str(value))
+        for name, value in asdict(options).items()
+        if value is not None and name != 'recipe_path'
     ]
     args = kcl.ExecProgramArgs(
-        k_filename_list=[str(files(__package__).joinpath('recipes/nisar.k'))],
+        k_filename_list=[str(files(__package__).joinpath('recipes/').joinpath(options.recipe_path))],
         error_format='short',
         args=recipe_args,
     )

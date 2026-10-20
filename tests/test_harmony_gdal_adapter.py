@@ -11,6 +11,7 @@ def make_recipe_input_options(**kwargs) -> RecipeInputOptions:
         collection_shortname='foobar',
         output_type='GTiff',
         variable_path='/science/LSAR/GCOV/grids/frequencyA/HHHH',
+        recipe_path='nisar.k',
         **kwargs,
     )
 
