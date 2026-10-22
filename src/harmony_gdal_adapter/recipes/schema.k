@@ -53,7 +53,7 @@ schema GdalOutputOptions:
     outputFilePath : str, default is "output"
         The file path to output to.
     """
-    output_type: "GTiff" | "COG" = "GTiff"
+    output_type: "GTiff" | "COG" = "COG"
     output_file_path: str = "output"
 
 schema GdalWarpOptions:
