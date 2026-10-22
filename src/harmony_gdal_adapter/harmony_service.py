@@ -15,6 +15,7 @@ from harmony_service_lib.exceptions import HarmonyException
 from harmony_service_lib.util import download, generate_output_filename, stage
 from requests.exceptions import RequestException
 
+import harmony_gdal_adapter
 from harmony_gdal_adapter.build_recipes import RecipeInputOptions, build_recipe
 from harmony_gdal_adapter.exceptions import (
     EmptyOutputError,
@@ -46,6 +47,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
         if (requested_type := self.message.format.process('mime')) != 'image/tiff':
             raise UnsupportedFileFormatError(requested_type)
 
+        self.logger.info(f'Harmony GDAL Adapter Version {harmony_gdal_adapter.__version__}')
         self.logger.info(f'Processing item {item.id}')
 
         granule_url = _get_asset_url(item, '.h5')
