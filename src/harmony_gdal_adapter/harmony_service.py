@@ -74,7 +74,7 @@ class HarmonyAdapter(harmony_service_lib.BaseHarmonyAdapter):
                     output_filename='',
                     collection_shortname=str(source.process('shortName')),
                     output_type=requested_type,
-                    variable_path=variable.fullPath,
+                    variable_path=variable.fullPath.strip(),
                 )
 
                 if (format := self.message.format) and (srs := format.srs) and (epsg := srs.epsg):
