@@ -19,6 +19,7 @@ _gdal_options = schema.GdalOptions {
     }
     output_options = schema.GdalOutputOptions {
         output_file_path = output_filename
+        output_type = "COG"
     }
 }
 
