@@ -1,15 +1,20 @@
 FROM mambaorg/micromamba:latest
 WORKDIR /home/mambauser
 
+USER root
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+USER $MAMBA_USER
+
 COPY --chown=$MAMBA_USER:$MAMBA_USER . /harmony-gdal-adapter/
 
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=1.0.0
-
-RUN micromamba install -y -n base -f /harmony-gdal-adapter/environment.yml && \
+RUN --mount=source=.git,target=.git,type=bind \
+    micromamba install -y -n base -f /harmony-gdal-adapter/environment.yml && \
 	micromamba install -y -n base git && \
 	micromamba clean --all --yes
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
-RUN python -m pip install -e /harmony-gdal-adapter/
+RUN --mount=source=.git,target=.git,type=bind \
+    python -m pip install -e /harmony-gdal-adapter/
 
 ENTRYPOINT ["/usr/local/bin/_entrypoint.sh", "python", "-m", "harmony_gdal_adapter.harmony_service"]
