@@ -35,7 +35,7 @@ class _WarpOptions(TypedDict, total=False):
     cropToCutline: bool | None
 
 
-def _validate_input_string(input_string: str, recipe: Recipe) -> None:
+def _validate_input_string(recipe: Recipe) -> None:
     input_options = recipe.inner.gdal_options.input_options
     truth_file = OpenEx(
         f'{input_options.virtual_filesystem or ""}{input_options.input_file_path}',
@@ -43,7 +43,7 @@ def _validate_input_string(input_string: str, recipe: Recipe) -> None:
     )
     valid_input_strings = [dataset[0] for dataset in truth_file.GetSubDatasets()]
 
-    if input_string not in valid_input_strings:
+    if not any(input_options.dataset_path in valid_input_string for valid_input_string in valid_input_strings):
         raise MissingVariableError(input_options.dataset_path)
 
 
@@ -58,7 +58,7 @@ def _validate_srs(srs: str) -> None:
 
 
 def _validate_recipe_input(recipe: Recipe) -> None:
-    _validate_input_string(_build_input_string(recipe), recipe)
+    _validate_input_string(recipe)
 
     match recipe.inner:
         case GdalWarpRecipe() as warp_recipe:
