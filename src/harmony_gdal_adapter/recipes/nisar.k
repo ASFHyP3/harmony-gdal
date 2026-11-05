@@ -18,12 +18,12 @@ _gdal_options = schema.GdalOptions {
         input_file_path = input_filename
     }
     output_options = schema.GdalOutputOptions {
-        output_type = "GTiff"
         output_file_path = output_filename
         creation_options = {
                 "BIGTIFF" = "IF_SAFER"
                 "NUM_THREADS" = "ALL_CPUS"
             }
+        output_type = "COG"
     }
 }
 
