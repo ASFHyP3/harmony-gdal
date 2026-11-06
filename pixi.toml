@@ -11,7 +11,7 @@ lint = "ruff check . && ruff format --check ."
 harmony = "python -m harmony_gdal_adapter.harmony_service"
 
 [dependencies]
-python = ">=3.14"
+python = "==3.14"
 pip = "*"
 setuptools_scm = "*"
 numpy = "*"
