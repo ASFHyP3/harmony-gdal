@@ -1,3 +1,13 @@
+## 0.0.3
+
+### Added
+
+- Support for creation options in recipes
+
+### Changed
+
+- Enable multithreading and BigTiff creation for NISAR
+
 ## [0.0.2]
 
 ### Changed
