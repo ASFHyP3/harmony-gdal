@@ -139,3 +139,4 @@ schema GdalWarpCutlineSpatialSubset:
     cutline_blend?: int
     cutline_srs: str = "EPSG:4326"
     crop_to_cutline: bool = True
+

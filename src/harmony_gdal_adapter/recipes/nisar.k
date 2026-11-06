@@ -20,9 +20,9 @@ _gdal_options = schema.GdalOptions {
     output_options = schema.GdalOutputOptions {
         output_file_path = output_filename
         creation_options = {
-                "BIGTIFF" = "IF_SAFER"
-                "NUM_THREADS" = "ALL_CPUS"
-            }
+            "BIGTIFF" = "IF_SAFER"
+            "NUM_THREADS" = "ALL_CPUS"
+        }
         output_type = "COG"
     }
 }
