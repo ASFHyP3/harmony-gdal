@@ -124,7 +124,7 @@ dependencies:
   - pytest-console-scripts==1.4.1
   - certifi==2026.10.23
   - pystac-ext-sar==1.0.2
-  - python-json-logger==2.0.7
+  - python-json-logger==4.2.0
   - kcl-lib==0.13.2
   - pystac==1.16.0
   - botocore==1.43.125
