@@ -33,6 +33,7 @@ class _WarpOptions(TypedDict, total=False):
     cutlineSQL: str | None
     cutlineBlend: int | None
     cropToCutline: bool | None
+    creationOptions: dict | None
 
 
 def _validate_input_string(recipe: Recipe) -> None:
@@ -159,6 +160,8 @@ def _build_gdal_output_options(output_options: GdalOutputOptions) -> _WarpOption
     """Build gdalOptions dictionary."""
     gdal_output_options = _WarpOptions()
     gdal_output_options['format'] = output_options.output_type
+    if output_options.creation_options is not None:
+        gdal_output_options['creationOptions'] = output_options.creation_options
     return gdal_output_options
 
 
