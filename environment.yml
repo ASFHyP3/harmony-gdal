@@ -127,7 +127,7 @@ dependencies:
   - python-json-logger==2.0.7
   - kcl-lib==0.13.2
   - pystac==1.16.0
-  - botocore==1.43.125
+  - botocore==1.43.126
   - pynacl==1.6.2
   - xarray==2026.9.0
   - pluggy==1.7.0
