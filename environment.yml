@@ -155,7 +155,7 @@ dependencies:
   - pystac-ext-projection==2.0.2
   - ruff==0.17.4
   - argparse-dataclass==2.0.0
-  - boto3==1.43.125
+  - boto3==1.43.126
   - mypy-extensions==1.2.0
   - pycparser==3.12
   - six==1.17.0
