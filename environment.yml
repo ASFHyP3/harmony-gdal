@@ -120,7 +120,7 @@ dependencies:
   - pandas==3.1.1
   - harmony-service-lib==3.0.0
   - pystac-core==1.16.0
-  - coverage==7.17.2
+  - coverage==7.17.3
   - pytest-console-scripts==1.4.1
   - certifi==2026.10.23
   - pystac-ext-sar==1.0.2
